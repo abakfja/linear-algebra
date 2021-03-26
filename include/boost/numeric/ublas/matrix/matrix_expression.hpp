@@ -9,16 +9,18 @@
 #ifndef UBLAS_MATRIX_EXPRESSION_HPP
 #define UBLAS_MATRIX_EXPRESSION_HPP
 
-#include <boost/numeric/ublas/matrix/detail/matrix_traits.hpp>
+#include <boost/numeric/ublas/matrix/traits/matrix_traits.hpp>
 #include <type_traits>
 
 
 namespace boost::numeric::ublas::experimental::detail {
 
-/// dynamic_matrix expression class for both unary and binary operators
-///
-/// \tparam callable
-/// \tparam operands
+/**
+ * @brief Template class to store both unary and binary matrix expressions
+ * 
+ * @tparam callable The function object for the respective expression
+ * @tparam operands The one or two operands for the expression
+ */
 template<class callable, class... operands>
 class matrix_expression {
     using expr_t = callable;
