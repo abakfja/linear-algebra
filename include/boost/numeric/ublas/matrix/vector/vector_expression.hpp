@@ -6,10 +6,11 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#include <boost/numeric/ublas/matrix/detail/matrix_traits.hpp>
-#include <type_traits>
+
 
 #ifndef UBLAS_VECTOR_EXPRESSION_HPP
 #define UBLAS_VECTOR_EXPRESSION_HPP
+
+#include <type_traits>
 
 #endif //UBLAS_VECTOR_EXPRESSION_HPP

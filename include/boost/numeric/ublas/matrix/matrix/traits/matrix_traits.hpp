@@ -36,6 +36,6 @@ struct is_matrix<T &> : is_matrix<T> {};
 template<typename T>
 using enable_if_matrix = std::enable_if_t<is_matrix_v<T>>;
 
-} // namespace boost::numeric::ublas::experimental::traits
+} // namespace boost::numeric::ublas::experimental::engine
 
 #endif //UBLAS_MATRIX_TRAIT_H

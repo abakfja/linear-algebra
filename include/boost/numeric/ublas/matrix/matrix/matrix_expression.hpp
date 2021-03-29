@@ -9,7 +9,7 @@
 #ifndef UBLAS_MATRIX_EXPRESSION_HPP
 #define UBLAS_MATRIX_EXPRESSION_HPP
 
-#include <boost/numeric/ublas/matrix/traits/matrix_traits.hpp>
+#include <boost/numeric/ublas/matrix/matrix/traits/matrix_traits.hpp>
 #include <type_traits>
 
 
