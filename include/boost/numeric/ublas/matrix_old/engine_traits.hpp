@@ -8,7 +8,7 @@
 
 namespace boost::numeric::ublas::experimental::detail {
 
-/// @brief checks if type is a matrix
+/// @brief checks if type is a matrix_old
 template<typename T>
 struct is_static : std::false_type {
 };
@@ -29,7 +29,7 @@ using enable_if_static = std::enable_if_t<is_static_v<T>>;
 
 
 
-/// @brief checks if type is a matrix
+/// @brief checks if type is a matrix_old
 template<typename T>
 struct is_dynamic : std::false_type {
 };

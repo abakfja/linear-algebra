@@ -7,6 +7,7 @@
 
 #include <boost/numeric/ublas/matrix/matrix/matrix_engine.hpp>
 #include <boost/numeric/ublas/matrix/matrix/traits/engine_traits.hpp>
+#include <boost/numeric/ublas/matrix/matrix/traits/matrix_traits.hpp>
 
 namespace boost::numeric::ublas::experimental {
 
