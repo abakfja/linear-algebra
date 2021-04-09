@@ -66,4 +66,63 @@ inline constexpr bool is_vector_or_expr_v = is_vector_or_expr<T>::value;
 
 }  // namespace boost::numeric::ublas::experimental::detail
 
+namespace boost::numeric::ublas::experimental {
+
+template<class Engine>
+class matrix;
+
+template<typename operation, typename ... operands>
+class matrix_expr;
+
+}  // namespace boost::numeric::ublas::experimental
+
+namespace boost::numeric::ublas::experimental::detail {
+
+template<class LHS, class RHS>
+struct bin_mat_op_ok : std::false_type {
+};
+
+template<class Engine1, class Engine2>  // only matrixs with same layout will add
+struct bin_mat_op_ok<matrix<Engine1>, matrix<Engine2>> : std::true_type {
+};
+
+template<typename T, class Engine>
+struct bin_mat_op_ok<T, matrix<Engine>> : std::true_type {
+};
+
+template<typename T, class Engine>
+struct bin_mat_op_ok<matrix<Engine>, T> : std::true_type {
+};
+
+template<typename LHS, typename RHS>
+using bin_mat_op_ok_t = typename bin_mat_op_ok<std::decay_t<LHS>,
+        std::decay_t<RHS>>::type;
+
+template<typename LHS, typename RHS>
+inline constexpr bool is_bin_mat_op_ok = bin_mat_op_ok_t<LHS, RHS>::value;
+
+}  // namespace boost::numeric::ublas::experimental::detail
+
+namespace boost::numeric::ublas::experimental::detail {
+
+template<typename T>
+struct is_matrix_or_expr : std::false_type {
+};
+
+template<class Engine>
+struct is_matrix_or_expr<matrix<Engine>> : std::true_type {
+};
+
+template<typename operation, typename ... operands>
+struct is_matrix_or_expr<matrix_expr<operation, operands...>> : std::true_type {
+};
+
+template<typename T>
+using is_matrix_or_expr_t = typename is_matrix_or_expr<std::decay<T>>::type;
+
+template<typename T>
+inline constexpr bool is_matrix_or_expr_v = is_matrix_or_expr<T>::value;
+
+}  // namespace boost::numeric::ublas::experimental::detail
+
 #endif  //UBLAS_EXPRESSION_TRAITS_HPP

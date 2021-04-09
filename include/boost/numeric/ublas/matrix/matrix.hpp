@@ -10,6 +10,7 @@
 #define BOOST_NUMERIC_UBLAS_MATRIX_H
 
 #include <boost/numeric/ublas/matrix/matrix_engine.hpp>
+#include <boost/numeric/ublas/matrix/matrix_expression.hpp>
 
 namespace boost::numeric::ublas::experimental {
 
@@ -40,7 +41,7 @@ public:
     using storage_tag = typename engine_type::storage_tag;
 
     using transpose_type = matrix<typename engine_type::transpose_type> &;
-    using const_transpose_type = const matrix<typename engine_type::transpose_type,> &;
+    using const_transpose_type = const matrix<typename engine_type::transpose_type> &;
 
     /**
      * default destructor
@@ -112,16 +113,16 @@ public:
         std::fill(expr_rep.begin(), expr_rep.end(), v);
     }
 
-//    template<typename operation,
-//            typename ... operands
-//    >
-//    constexpr
-//    matrix(const matrix_expr<operation, operands...> expr): expr_rep(expr.size()) {
-//        assert(size() == expr.size());
-//        for (size_type i = 0; i < size(); i++) {
-//            this->operator[](i) = expr[i];
-//        }
-//    }
+    template<typename operation,
+            typename ... operands
+    >
+    constexpr
+    matrix(const matrix_expr<operation, operands...> expr): expr_rep(expr.size()) {
+        assert(size() == expr.size());
+        for (size_type i = 0; i < data_size(); i++) {
+            this->operator[](i) = expr[i];
+        }
+    }
 
     constexpr matrix &operator=(matrix &&) noexcept = default;
 
@@ -143,30 +144,30 @@ public:
         return *this;
     }
 
-//    /**
-//     * Assignment operator to convert a matrix expression into a matrix type
-//     *
-//     * @tparam operation
-//     * @tparam operands
-//     * @param expr
-//     * @return
-//     */
-//    template<typename operation, typename ... operands>
-//    constexpr matrix &operator=(const matrix_expr<operation, operands...> expr) {
-//        if constexpr (detail::is_dynamic_v<engine_type>) {
-//            expr_rep.resize(expr.size());
-//        } else {
-//            assert(size() == expr.size());
-//        }
-//        for (size_type i = 0; i < data_size(); i++) {
-//            this->operator[](i) = expr[i];
-//        }
-//        return *this;
-//    }
+    /**
+     * Assignment operator to convert a matrix expression into a matrix type
+     *
+     * @tparam operation
+     * @tparam operands
+     * @param expr
+     * @return
+     */
+    template<typename operation, typename ... operands>
+    constexpr matrix &operator=(const matrix_expr<operation, operands...> expr) {
+        if constexpr (detail::is_dynamic_v<engine_type>) {
+            expr_rep.resize(expr.size());
+        } else {
+            assert(size() == expr.size());
+        }
+        for (size_type i = 0; i < data_size(); i++) {
+            this->operator[](i) = expr[i];
+        }
+        return *this;
+    }
 
     template<typename engine2>
     constexpr bool operator==(const matrix<engine2> &other) const {
-        assert(size) == other.size());
+        assert(size() == other.size());
         for (size_type i = 0; i < data_size(); i++) {
             if (this->operator[](i) != other[i]) {
                 return false;
@@ -179,15 +180,15 @@ public:
         return expr_rep.data_size();
     }
 
-    [[nodiscard]] constexpr size_tuple size() const noexcept {
+    [[nodiscard]] constexpr size_pair size() const noexcept {
         return expr_rep.size();
     }
 
-    [[nodiscard]] constexpr size_tuple rows() const noexcept {
+    [[nodiscard]] constexpr size_pair rows() const noexcept {
         return expr_rep.n_rows;
     }
 
-    [[nodiscard]] constexpr size_tuple cols() const noexcept {
+    [[nodiscard]] constexpr size_pair cols() const noexcept {
         return expr_rep.n_cols();
     }
 

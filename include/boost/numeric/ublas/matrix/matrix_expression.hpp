@@ -9,7 +9,7 @@
 #include <tuple>
 
 namespace boost::numeric::ublas::experimental {
-    
+
 } // boost::numeric::ublas::experimental
 
 
@@ -18,7 +18,7 @@ namespace boost::numeric::ublas::experimental {
 template<typename operand>
 constexpr inline auto index_op(operand a, std::size_t idx) {
     if constexpr(detail::is_matrix_or_expr_v<operand>) {
-        return a(n, m);
+        return a[idx];
     } else {
         return a;
     }
@@ -48,9 +48,9 @@ class matrix_expr {
 public:
     explicit matrix_expr(operation f_, operands const &... args_) : f(f_), args(args_...) {}
 
-    auto operator[](std::size_t n, std::size_t m) const {
-        return std::apply([this, n, m](operands const &... a) {
-            return f(index_op(a, n, m)...);
+    auto operator[](std::size_t idx) const {
+        return std::apply([this, idx](operands const &... a) {
+            return f(index_op(a, idx)...);
         }, args);
     }
 
@@ -59,7 +59,7 @@ public:
             std::size_t a{}, b{};
             ((a = std::max(a, expr_rows(x))), ...);
             ((b = std::max(b, expr_cols(x))), ...);
-            return make_pair(a, b);
+            return std::make_pair(a, b);
         }, args);
     }
 
