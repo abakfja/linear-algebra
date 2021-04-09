@@ -1,11 +1,10 @@
 //
-// Created by fragrant on 4/4/21.
+// Created by abakfja on 4/4/21.
 //
 
 #ifndef UBLAS_EXPRESSION_TRAITS_HPP
 #define UBLAS_EXPRESSION_TRAITS_HPP
 
-#include <boost/numeric/ublas/matrix/detail/scalar_t.hpp>
 #include <type_traits>
 
 namespace boost::numeric::ublas::experimental {
@@ -46,16 +45,6 @@ inline constexpr bool is_bin_vec_op_ok = bin_vec_op_ok_t<LHS, RHS>::value;
 }  // namespace boost::numeric::ublas::experimental::detail
 
 namespace boost::numeric::ublas::experimental::detail {
-
-template<typename T>
-struct expr_traits {
-    using expr_ref = const T &;
-};
-
-template<typename T>
-struct expr_traits<scalar_t<T>> {
-    using expr_ref = scalar_t<T>;
-};
 
 template<typename T>
 struct is_vector_or_expr : std::false_type {

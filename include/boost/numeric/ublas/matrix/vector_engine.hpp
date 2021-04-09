@@ -22,6 +22,10 @@ namespace boost::numeric::ublas::experimental {
 
 template<typename T, std::size_t N>
 struct fixed_vector_engine {
+//    static_assert(std::is_object<T>::value,
+//                  "A vector's ElementType must be an object type (not a "
+//                  "reference type or void)");
+
     using array_type = std::array<T, N>;
     using storage_traits_type = storage_traits<array_type>;
 
@@ -55,19 +59,21 @@ struct fixed_vector_engine {
 
     constexpr fixed_vector_engine(self_type &&other) noexcept = default;
 
-    // for compatibility
-    constexpr explicit fixed_vector_engine(size_type sz) : m_data() {
-        std::fill(m_data.begin(), m_data.end(), value_type{});
-    }
-
-    constexpr explicit fixed_vector_engine(value_type v) : m_data() {
-        std::fill(m_data.begin(), m_data.end(), v);
+    template<class Engine2>
+    constexpr fixed_vector_engine(const Engine2 &rhs): m_data() {
+        assert(rhs.size() <= m_elems); // bound checking
+        std::copy(rhs.begin(), rhs.end(), m_data.begin());
     }
 
     template<typename U>
-    fixed_vector_engine(std::initializer_list<U> lst) {
+    constexpr fixed_vector_engine(std::initializer_list<U> lst) {
         assert(lst.size() <= m_elems); // bound checking
         std::copy(lst.begin(), lst.end(), m_data.begin());
+    }
+
+    constexpr explicit fixed_vector_engine(size_type s) : m_data() {
+        assert(m_elems == s);
+        std::fill(m_data.begin(), m_data.end(), value_type{});
     }
 
     constexpr fixed_vector_engine &operator=(fixed_vector_engine &&) noexcept = default;
@@ -113,6 +119,10 @@ struct fixed_vector_engine {
 
 template<typename T>
 struct dynamic_vector_engine {
+//    static_assert(std::is_object<T>::value,
+//                  "A vector's ElementType must be an object type (not a "
+//                  "reference type or void)");
+
     using scalar_type = T;
 
     using array_type = std::vector<scalar_type>;
@@ -148,12 +158,11 @@ struct dynamic_vector_engine {
 
     dynamic_vector_engine(self_type &&other) noexcept = default;
 
-    explicit dynamic_vector_engine(size_type n, value_type v = {}) : m_elems{n}, m_data(m_elems, v) {
-    };
 
-    template<typename U, std::size_t N>
-    explicit
-    dynamic_vector_engine(fixed_vector_engine<U, N> other) : m_elems{N}, m_data(m_elems) {};
+    template<class Engine2>
+    constexpr dynamic_vector_engine(const Engine2 &rhs): m_elems{rhs.size()}, m_data(m_elems) {
+        std::copy(rhs.begin(), rhs.end(), m_data.begin());
+    }
 
     template<typename U>
     dynamic_vector_engine(std::initializer_list<U> lst) : m_elems{lst.size()},
@@ -161,39 +170,47 @@ struct dynamic_vector_engine {
         std::copy(lst.begin(), lst.end(), m_data.begin());
     }
 
+    explicit dynamic_vector_engine(size_type n) : m_elems{n}, m_data(m_elems) {
+    };
+
     constexpr dynamic_vector_engine &operator=(dynamic_vector_engine &&) noexcept = default;
 
     constexpr dynamic_vector_engine &operator=(dynamic_vector_engine const &) = default;
 
-    reference operator[](size_type idx) {
+    reference operator[](size_type idx) noexcept {
         return m_data[idx]; // no bound checking here
     }
 
-    const_reference operator[](size_type idx) const {
+    const_reference operator[](size_type idx) const noexcept {
         return m_data[idx]; // no bound checking here
     }
 
-    [[nodiscard]] constexpr size_type size() const {
+    [[nodiscard]] constexpr size_type size() const noexcept {
         return m_data.size();
     }
 
-    [[nodiscard]] constexpr bool empty() const {
+    [[nodiscard]] constexpr bool empty() const noexcept {
         return m_data.empty();
     }
 
-    constexpr auto begin() noexcept {
+    void resize(size_type elems) {
+        m_data.resize(elems);
+        m_elems = elems;
+    }
+
+    auto begin() noexcept {
         return m_data.begin();
     }
 
-    constexpr auto end() noexcept {
+    auto end() noexcept {
         return m_data.end();
     }
 
-    constexpr auto begin() const noexcept {
+    auto begin() const noexcept {
         return m_data.begin();
     }
 
-    constexpr auto end() const noexcept {
+    auto end() const noexcept {
         return m_data.end();
     }
 

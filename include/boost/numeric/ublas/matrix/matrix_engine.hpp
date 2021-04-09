@@ -13,13 +13,20 @@
 #include <array>
 #include <vector>
 #include <tuple>
-#include <boost/numeric/ublas/matrix/traits/storage_traits.hpp>
 #include <cassert>
+
+#include <boost/numeric/ublas/matrix/traits/storage_traits.hpp>
+#include <boost/numeric/ublas/matrix/traits/engine_traits.hpp>
+
 
 namespace boost::numeric::ublas::experimental {
 
 template<typename T, std::size_t R, std::size_t C>
 struct fixed_matrix_engine {
+    static_assert(std::is_object<T>::value,
+                  "A matrix's ElementType must be an object type (not a "
+                  "reference type or void)");
+
     using array_type = std::array<T, R * C>;
     using storage_traits_type = storage_traits<array_type>;
 
@@ -46,11 +53,19 @@ struct fixed_matrix_engine {
     using self_type = fixed_matrix_engine<T, R, C>;
     using transpose_type = fixed_matrix_engine<T, C, R>;
 
+    ~fixed_matrix_engine() noexcept = default;
+
     fixed_matrix_engine() = default;
 
     fixed_matrix_engine(const self_type &other) = default;
 
     fixed_matrix_engine(self_type &&other) noexcept = default;
+
+    template<class Engine2>
+    constexpr fixed_matrix_engine(const Engine2 &rhs): m_data() {
+        assert(rhs.size().first <= m_rows && rhs.size().second <= m_cols); // bound checking
+        std::copy(rhs.begin(), rhs.end(), m_data.begin());
+    }
 
     fixed_matrix_engine(std::initializer_list<std::initializer_list<value_type>> lst) {
         assert(lst.size() <= m_rows); // bound checking
@@ -66,17 +81,50 @@ struct fixed_matrix_engine {
         }
     }
 
-//    template<typename T2>
-//    constexpr fixed_matrix_engine &operator=(fixed_matrix_engine<T2, R, C> const & other) {
-//        std::copy(other.begin(), other.end(), m_data.begin());
-//    }
+    // for compatibility
+    constexpr explicit fixed_matrix_engine(size_pair sz) : m_data() {
+        assert(size() == sz);
+        std::fill(m_data.begin(), m_data.end(), value_type{});
+    }
 
     constexpr fixed_matrix_engine &operator=(fixed_matrix_engine &&) noexcept = default;
 
     constexpr fixed_matrix_engine &operator=(fixed_matrix_engine const &) = default;
 
-    constexpr size_pair size() noexcept {
-        return std::make_pair(m_cols, m_rows);
+    constexpr reference operator[](size_type idx) {
+        return m_data[idx]; // no bound checking here
+    }
+
+    constexpr const_reference operator[](size_type idx) const {
+        return m_data[idx]; // no bound checking here
+    }
+
+    [[nodiscard]] constexpr size_pair size() const {
+        return std::make_pair(m_rows, m_cols);
+    }
+
+    [[nodiscard]] constexpr size_type data_size() noexcept {
+        return m_data.size();
+    }
+
+    [[nodiscard]] constexpr bool empty() const {
+        return m_data.empty();
+    }
+
+    constexpr auto begin() noexcept {
+        return m_data.begin();
+    }
+
+    constexpr auto end() noexcept {
+        return m_data.end();
+    }
+
+    constexpr auto begin() const noexcept {
+        return m_data.begin();
+    }
+
+    constexpr auto end() const noexcept {
+        return m_data.end();
     }
 
     static constexpr size_type m_rows{R};
@@ -87,6 +135,9 @@ struct fixed_matrix_engine {
 
 template<typename T>
 struct dynamic_matrix_engine {
+    static_assert(std::is_object<T>::value,
+                  "A vector's ElementType must be an object type (not a "
+                  "reference type or void)");
     using scalar_type = T;
 
     using array_type = std::vector<scalar_type>;
@@ -115,17 +166,20 @@ struct dynamic_matrix_engine {
     using self_type = dynamic_matrix_engine<T>;
     using transpose_type = self_type;
 
+    ~dynamic_matrix_engine() noexcept = default;
+
     dynamic_matrix_engine() = default;
 
     dynamic_matrix_engine(const self_type &other) = default;
 
     dynamic_matrix_engine(self_type &&other) noexcept = default;
 
-    dynamic_matrix_engine(size_type r, size_type c) : m_rows(r), m_cols(c), m_data(r * c) {};
-
-    template<typename U, std::size_t R, std::size_t C>
-    explicit dynamic_matrix_engine(fixed_matrix_engine<U, R, C> other) : m_rows(R), m_cols(C),
-                                                                         m_data(R * C) {};
+    template<class Engine2>
+    constexpr
+    dynamic_matrix_engine(const Engine2 &other) : m_rows(other.rows()), m_cols(other.cols()),
+                                                  m_data(m_rows * m_cols) {
+        std::copy(other.begin(), other.end(), m_data.begin());
+    };
 
     dynamic_matrix_engine(std::initializer_list<std::initializer_list<value_type>> lst) :
             m_rows{lst.size()},
@@ -142,19 +196,77 @@ struct dynamic_matrix_engine {
         }
     }
 
+    explicit dynamic_matrix_engine(size_type r, size_type c) : m_rows(r), m_cols(c),
+                                                               m_data(r * c) {};
+
+    explicit dynamic_matrix_engine(size_pair sz) : m_rows(sz.first), m_cols(sz.second),
+                                                   m_data(m_rows * m_cols) {};
+
+
     constexpr dynamic_matrix_engine &operator=(dynamic_matrix_engine &&) noexcept = default;
 
     constexpr dynamic_matrix_engine &operator=(dynamic_matrix_engine const &) = default;
 
-    constexpr size_pair size() noexcept {
+    reference operator[](size_type idx) {
+        return m_data[idx]; // no bound checking here
+    }
+
+    const_reference operator[](size_type idx) const {
+        return m_data[idx]; // no bound checking here
+    }
+
+    [[nodiscard]] constexpr size_pair size() noexcept {
         return std::make_pair(m_cols, m_rows);
     }
 
-    array_type m_data;
+    [[nodiscard]] constexpr size_type data_size() noexcept {
+        return m_data.size();
+    }
+
+    [[nodiscard]] constexpr bool empty() const {
+        return m_data.empty();
+    }
+
+    constexpr size_type rows() noexcept {
+        return m_rows;
+    }
+
+    constexpr size_type cols() noexcept {
+        return m_cols;
+    }
+
+    decltype(auto) begin() noexcept {
+        return m_data.begin();
+    }
+
+    decltype(auto) end() noexcept {
+        return m_data.end();
+    }
+
+    decltype(auto) begin() const noexcept {
+        return m_data.begin();
+    }
+
+    decltype(auto) end() const noexcept {
+        return m_data.end();
+    }
+
     size_type m_rows;
     size_type m_cols;
+    array_type m_data;
 };
 
 } // namespace boost::numeric::ublas::experimental
+
+namespace boost::numeric::ublas::experimental::detail {
+template<typename T, std::size_t R, std::size_t C>
+struct is_static<fixed_matrix_engine<T, R, C>> : std::true_type {
+};
+
+template<typename T>
+struct is_dynamic<dynamic_matrix_engine<T>> : std::true_type {
+};
+
+} // namespace boost::numeric::ublas::experimental::detail
 
 #endif // BOOST_NUMERIC_UBLAS_MATRIX_ENGINE_H
