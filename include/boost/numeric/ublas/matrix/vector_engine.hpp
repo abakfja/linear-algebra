@@ -15,6 +15,7 @@
 #include <tuple>
 #include <cassert>
 
+#include <boost/numeric/ublas/matrix/helper.hpp>
 #include <boost/numeric/ublas/matrix/traits/storage_traits.hpp>
 #include <boost/numeric/ublas/matrix/traits/engine_traits.hpp>
 
@@ -67,12 +68,14 @@ struct fixed_vector_engine {
 
     template<typename U>
     constexpr fixed_vector_engine(std::initializer_list<U> lst) {
-        assert(lst.size() <= m_elems); // bound checking
+        check_init_list(lst, size());
         std::copy(lst.begin(), lst.end(), m_data.begin());
     }
 
     constexpr explicit fixed_vector_engine(size_type s) : m_data() {
-        assert(m_elems == s);
+        if (s != m_elems) {
+            throw std::runtime_error("Cannot reshape a fixed vector, use dynamic vector");
+        }
         std::fill(m_data.begin(), m_data.end(), value_type{});
     }
 
@@ -185,11 +188,11 @@ struct dynamic_vector_engine {
         return m_data[idx]; // no bound checking here
     }
 
-    [[nodiscard]] constexpr size_type size() const noexcept {
+    [[nodiscard]]  size_type size() const noexcept {
         return m_data.size();
     }
 
-    [[nodiscard]] constexpr bool empty() const noexcept {
+    [[nodiscard]]  bool empty() const noexcept {
         return m_data.empty();
     }
 

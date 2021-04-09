@@ -9,9 +9,12 @@
 #ifndef BOOST_NUMERIC_UBLAS_VECTOR_H
 #define BOOST_NUMERIC_UBLAS_VECTOR_H
 
+#include <boost/numeric/ublas/matrix/helper.hpp>
 #include <boost/numeric/ublas/matrix/vector_engine.hpp>
 #include <boost/numeric/ublas/matrix/vector_expression.hpp>
+#include <boost/numeric/ublas/matrix/vector_view.hpp>
 #include <boost/numeric/ublas/matrix/traits/layout_traits.hpp>
+
 
 namespace boost::numeric::ublas::experimental {
 
@@ -54,12 +57,12 @@ public:
     /**
      * default move constructor
      */
-    constexpr vector(vector &&) noexcept = default;
+//    constexpr vector(vector &&) noexcept = default;
 
     /**
      * default copy constructor
      */
-    constexpr vector(const vector &) = default;
+//    constexpr vector(const vector &) = default;
 
     /**
      * Copy constructor for cross engine conversion of vectors
@@ -68,8 +71,7 @@ public:
      */
     template<class Engine2>
     constexpr
-    vector(const vector<Engine2, layout_type> &other) : expr_rep(other.size()) {
-        assert(expr_rep.size() >= other.size());
+    vector(const vector<Engine2, layout_type> &other) : data(other.size()) {
         std::copy(other.begin(), other.end(), begin());
     }
 
@@ -79,7 +81,7 @@ public:
      * @param list
      */
     template<typename U>
-    constexpr vector(std::initializer_list<U> list): expr_rep(list) {}
+    constexpr vector(std::initializer_list<U> list): data(list) {}
 
     /**
      * c-tor for constructing a dynamic_size_vector of size n
@@ -89,8 +91,8 @@ public:
      * @param v initial value of the vector elements
      */
     template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
-    explicit constexpr vector(size_type n, value_type v = {}) : expr_rep(n) {
-        std::fill(expr_rep.begin(), expr_rep.end(), v);
+    explicit constexpr vector(size_type n, value_type v = {}) : data(n) {
+        std::fill(data.begin(), data.end(), v);
     }
 
     /**
@@ -99,16 +101,16 @@ public:
      * @param v initial value of the vector
      */
     template<class Engine2 = engine_type, typename = detail::enable_if_static<Engine2>>
-    constexpr explicit vector(value_type v): expr_rep() {
-        std::fill(expr_rep.begin(), expr_rep.end(), v);
+    constexpr explicit vector(value_type v): data() {
+        std::fill(data.begin(), data.end(), v);
     }
 
     template<typename operation,
             typename ... operands
     >
     constexpr
-    vector(const vector_expr<operation, operands...> expr): expr_rep(expr.size()) {
-        assert(size() == expr.size());
+    vector(const vector_expr<operation, operands...> expr): data(expr.size()) {
+        check_engine_size(expr, size());
         for (size_type i = 0; i < size(); i++) {
             this->operator[](i) = expr[i];
         }
@@ -116,36 +118,40 @@ public:
 
     constexpr vector &operator=(vector &&) noexcept = default;
 
-    constexpr vector &operator=(vector const &) = default;
+    constexpr vector &operator=(vector const & other) {
+        check_engine_size(other.data, size());
+        std::copy(other.begin(), other.end(), data.begin());
+        return *this;
+    }
 
     // copy assignment
-    template<typename engine2>
-    constexpr vector &operator=(const vector<engine2, layout_type> &other) {
+    template<typename Engine2>
+    constexpr vector &operator=(const vector<Engine2, layout_type> &other) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            expr_rep.resize(other.size());
+            data.resize(other.size());
         } else {
-            assert(size() == other.size());
+            check_engine_size(other.data, size());
         }
-        std::copy(other.begin(), other.end(), expr_rep.begin());
+        std::copy(other.begin(), other.end(), data.begin());
         return *this;
     }
 
     template<typename operation, typename ... operands>
     constexpr vector &operator=(const vector_expr<operation, operands...> expr) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            expr_rep.resize(expr.size());
+            data.resize(expr.size());
         } else {
-            assert(size() == expr.size());
+            check_engine_size(expr, size());
         }
         for (size_type i = 0; i < size(); i++) {
-            this->operator[](i) = expr[i];
+            this->operator[](i) = static_cast<value_type>(expr[i]);
         }
         return *this;
     }
 
     template<typename engine2>
     bool operator==(const vector<engine2, layout_type> &other) const {
-        assert(size() == other.size());
+        check_engine_size(other, size());
         for (size_type i = 0; i < size(); i++) {
             if (this->operator[](i) != other[i]) {
                 return false;
@@ -154,45 +160,65 @@ public:
         return true;
     }
 
-    const_reference operator[](size_type idx) const noexcept {
-        return expr_rep[idx];
+    template<typename engine2>
+    constexpr bool operator!=(const vector<engine2, layout_type> &other) const {
+        return !(this->template operator==(other));
     }
 
-    reference operator[](size_type idx) noexcept {
-        return expr_rep[idx];
+    constexpr vector<vector_view_engine<engine_type, detail::read_only_view_tag>, layout_type>
+    operator()(std::pair<size_type, size_type> slice) {
+        return vector<vector_view_engine<engine_type,
+                detail::read_only_view_tag>>(detail::constructor_tag{}, data,
+                                             slice.first,
+                                             slice.second - slice.first);
     }
 
-    [[nodiscard]]  size_type size() const noexcept {
-        return expr_rep.size();
+    constexpr const_reference operator[](size_type idx) const noexcept {
+        return data[idx];
     }
 
-    [[nodiscard]]  bool empty() const noexcept {
-        return expr_rep.empty();
+    constexpr reference operator[](size_type idx) noexcept {
+        return data[idx];
+    }
+
+    [[nodiscard]] constexpr size_type size() const noexcept {
+        return data.size();
+    }
+
+    [[nodiscard]] constexpr bool empty() const noexcept {
+        return data.empty();
     }
 
     template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
     void resize(size_type n) {
-        expr_rep.resize(n);
+        data.resize(n);
     }
 
     constexpr auto begin() noexcept {
-        return expr_rep.begin();
+        return data.begin();
     }
 
     constexpr auto end() noexcept {
-        return expr_rep.end();
+        return data.end();
     }
 
     constexpr auto begin() const noexcept {
-        return expr_rep.begin();
+        return data.begin();
     }
 
     constexpr auto end() const noexcept {
-        return expr_rep.end();
+        return data.end();
     }
 
 private:
-    engine_type expr_rep;
+    template<class Engine2, class layout2>
+    friend class vector;
+
+    template<class Engine2, class... args>
+    constexpr vector(detail::constructor_tag, Engine2 &&eng, args &&... _args) : data(eng, _args...) {
+    }
+
+    engine_type data;
 };
 
 } // namespace boost::numeric::ublas::experimental

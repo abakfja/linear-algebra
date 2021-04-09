@@ -52,31 +52,6 @@ private:
     operation f;
 };
 
-
-template<class LHS, class RHS, typename = std::enable_if<
-        detail::is_bin_vec_op_ok<LHS, RHS>, bool>>
-inline decltype(auto) constexpr operator*(const LHS &lhs, const RHS &rhs) {
-    return vector_expr{[](auto a, auto b) {
-        return a * b;
-    }, lhs, rhs};
-}
-
-template<class LHS, class RHS, typename = std::enable_if<
-        detail::is_bin_vec_op_ok<LHS, RHS>, bool>>
-inline decltype(auto) constexpr operator/(const LHS &lhs, const RHS &rhs) {
-    return vector_expr{[](auto a, auto b) {
-        return a / b;
-    }, lhs, rhs};
-}
-
-template<class LHS, class RHS, typename = std::enable_if<
-        detail::is_bin_vec_op_ok<LHS, RHS>, bool>>
-inline decltype(auto) constexpr operator%(const LHS &lhs, const RHS &rhs) {
-    return vector_expr{[](auto a, auto b) {
-        return a % b;
-    }, lhs, rhs};
-}
-
 template<class LHS, class RHS, typename = std::enable_if<
         detail::is_bin_vec_op_ok<LHS, RHS>, bool>>
 inline decltype(auto) constexpr operator+(const LHS &lhs, const RHS &rhs) {

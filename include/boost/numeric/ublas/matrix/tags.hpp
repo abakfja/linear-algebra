@@ -14,6 +14,13 @@ namespace boost::numeric::ublas::experimental::detail {
 struct storage_dynamic_container_tag{};
 struct storage_static_container_tag{};
 
+
+struct read_only_view_tag{};
+struct read_write_view_tag{};
+
+struct constructor_tag{};
+
 } // namespace boost::numeric::ublas::experimental
+
 
 #endif // BOOST_NUMERIC_UBLAS_MATRIX_TAGS_H

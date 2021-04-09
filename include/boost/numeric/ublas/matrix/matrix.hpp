@@ -176,6 +176,11 @@ public:
         return true;
     }
 
+    template<typename engine2>
+    constexpr bool operator!=(const matrix<engine2> &other) const {
+        return !(this->template operator==(other));
+    }
+
     [[nodiscard]] constexpr size_type data_size() const noexcept {
         return expr_rep.data_size();
     }
