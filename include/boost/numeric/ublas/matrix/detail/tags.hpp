@@ -14,10 +14,15 @@ namespace boost::numeric::ublas::experimental::detail {
 struct storage_dynamic_container_tag{};
 struct storage_static_container_tag{};
 
-
+/**
+ * These tags signify the nature of the view engines
+ */
 struct read_only_view_tag{};
 struct read_write_view_tag{};
 
+/**
+ * This tag is for calling the inner-constructors of matrix and vector engines
+ */
 struct constructor_tag{};
 
 } // namespace boost::numeric::ublas::experimental

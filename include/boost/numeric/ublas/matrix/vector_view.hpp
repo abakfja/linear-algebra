@@ -10,7 +10,7 @@
 namespace boost::numeric::ublas::experimental {
 
 /**
- *
+ * A non-owning view for a vector(i.e 1D contiguous range)
  * @tparam Engine The vector_view_engine uses the engine type as a traits type and not as a data
  *         source
  * @tparam read_write_tag
@@ -42,8 +42,8 @@ struct vector_view_engine {
 
     using storage_tag = typename engine_type::storage_tag;
 
-    using transpose_type = matrix<typename engine_type::transpose_type> &;
-    using const_transpose_type = const matrix<typename engine_type::transpose_type> &;
+    using transpose_type = vector_view_engine<typename engine_type::transpose_type, read_write_tag> &;
+    using const_transpose_type = const vector_view_engine<typename engine_type::transpose_type, read_write_tag> &;
 
     ~vector_view_engine() noexcept = default;
 
@@ -53,16 +53,30 @@ struct vector_view_engine {
 
     constexpr vector_view_engine(const vector_view_engine &) noexcept = default;
 
-    explicit constexpr vector_view_engine(size_type n) : data(n) {}
-
     constexpr vector_view_engine(engine_reference &engine, size_type start, size_type count) :
             data(&engine), m_start{start}, m_elems{count} {
     }
 
-    constexpr vector_view_engine &operator=(vector_view_engine &&) noexcept = default;
+    constexpr vector_view_engine &operator=(vector_view_engine &&other) noexcept {
+        if (&other != this) {
+            check_engine_size(other, size());
+            std::copy(other.begin(), other.end(), begin());
+        }
+        return *this;
+    }
 
-    constexpr vector_view_engine &operator=(const vector_view_engine &) noexcept = default;
+    constexpr vector_view_engine &operator=(const vector_view_engine &other) noexcept {
+        if (&other != this) {
+            check_engine_size(other, size());
+            std::copy(other.begin(), other.end(), begin());
+        }
+        return *this;
+    }
 
+    template<typename Engine2>
+    constexpr vector_view_engine &operator=(const Engine2& other) noexcept {
+        return *this;
+    }
 
     constexpr const_reference operator[](size_type idx) const noexcept {
         return data->operator[](m_start + idx);
@@ -96,9 +110,9 @@ struct vector_view_engine {
         return data->begin() + m_start + m_elems;
     }
 
-    engine_reference *data;
-    size_type m_start;
-    size_type m_elems;
+    engine_reference *data = nullptr;
+    size_type m_start{};
+    size_type m_elems{};
 };
 
 }

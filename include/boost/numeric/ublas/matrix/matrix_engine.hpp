@@ -15,9 +15,9 @@
 #include <tuple>
 #include <cassert>
 
+#include <boost/numeric/ublas/matrix/detail/helper.hpp>
 #include <boost/numeric/ublas/matrix/traits/storage_traits.hpp>
 #include <boost/numeric/ublas/matrix/traits/engine_traits.hpp>
-
 
 namespace boost::numeric::ublas::experimental {
 
@@ -31,7 +31,7 @@ struct fixed_matrix_engine {
     using storage_traits_type = storage_traits<array_type>;
 
     using size_type = typename storage_traits_type::size_type;
-    using size_pair = std::pair<size_type, size_type>;
+    using size_tuple = std::pair<size_type, size_type>;
     using difference_type = typename storage_traits_type::difference_type;
 
     using value_type = typename storage_traits_type::value_type;
@@ -62,29 +62,21 @@ struct fixed_matrix_engine {
     fixed_matrix_engine(self_type &&other) noexcept = default;
 
     template<class Engine2>
-    constexpr fixed_matrix_engine(const Engine2 &rhs): m_data() {
-        assert(rhs.size().first <= m_rows && rhs.size().second <= m_cols); // bound checking
-        std::copy(rhs.begin(), rhs.end(), m_data.begin());
+    constexpr fixed_matrix_engine(const Engine2 &other): m_data() {
+        detail::check_engine_size(other, rows(), cols());
+        detail::copy_matrix_engine(*this, other);
     }
 
     fixed_matrix_engine(std::initializer_list<std::initializer_list<value_type>> lst) {
-        assert(lst.size() <= m_rows); // bound checking
-        size_type max_c{0};
-        for (auto &x: lst) {
-            max_c = std::max(max_c, x.size());
-        }
-        assert(max_c <= m_cols); // bound checking
-        auto it = lst.begin();
-        for (size_type i{0}; i < lst.size(); i++) {
-            std::copy(it->begin(), it->end(), m_data.begin() + i * m_cols);
-            it++;
-        }
+        detail::check_init_list(lst, rows(), cols());
+        detail::copy_matrix_engine(*this, lst);
     }
 
     // for compatibility
-    constexpr explicit fixed_matrix_engine(size_pair sz) : m_data() {
-        assert(size() == sz);
-        std::fill(m_data.begin(), m_data.end(), value_type{});
+    constexpr explicit fixed_matrix_engine(size_type r, size_type c) : m_data() {
+        if (r != m_rows || c != m_cols) {
+            throw std::runtime_error("Cannot reshape a fixed vector, use dynamic vector");
+        }
     }
 
     constexpr fixed_matrix_engine &operator=(fixed_matrix_engine &&) noexcept = default;
@@ -99,8 +91,20 @@ struct fixed_matrix_engine {
         return m_data[idx]; // no bound checking here
     }
 
-    [[nodiscard]] constexpr size_pair size() const {
-        return std::make_pair(m_rows, m_cols);
+    constexpr reference operator()(size_type r, size_type c) {
+        return m_data[c + r * cols()];
+    }
+
+    constexpr const_reference operator()(size_type r, size_type c) const {
+        return m_data[c + r * cols()];
+    }
+
+    [[nodiscard]] constexpr size_type rows() const {
+        return m_rows;
+    }
+
+    [[nodiscard]] constexpr size_type cols() const {
+        return m_cols;
     }
 
     [[nodiscard]] constexpr size_type data_size() noexcept {
@@ -109,22 +113,6 @@ struct fixed_matrix_engine {
 
     [[nodiscard]] constexpr bool empty() const {
         return m_data.empty();
-    }
-
-    constexpr auto begin() noexcept {
-        return m_data.begin();
-    }
-
-    constexpr auto end() noexcept {
-        return m_data.end();
-    }
-
-    constexpr auto begin() const noexcept {
-        return m_data.begin();
-    }
-
-    constexpr auto end() const noexcept {
-        return m_data.end();
     }
 
     static constexpr size_type m_rows{R};
@@ -144,7 +132,7 @@ struct dynamic_matrix_engine {
     using storage_traits_type = storage_traits<array_type>;
 
     using size_type = typename storage_traits_type::size_type;
-    using size_pair = std::pair<size_type, size_type>;
+    using size_tuple = std::pair<size_type, size_type>;
     using difference_type = typename storage_traits_type::difference_type;
 
     using value_type = typename storage_traits_type::value_type;
@@ -176,79 +164,76 @@ struct dynamic_matrix_engine {
 
     template<class Engine2>
     constexpr
-    dynamic_matrix_engine(const Engine2 &other) : m_rows(other.rows()), m_cols(other.cols()),
+    dynamic_matrix_engine(const Engine2 &other) : m_rows{other.rows()}, m_cols{other.cols()},
                                                   m_data(m_rows * m_cols) {
-        std::copy(other.begin(), other.end(), m_data.begin());
-    };
-
-    dynamic_matrix_engine(std::initializer_list<std::initializer_list<value_type>> lst) :
-            m_rows{lst.size()},
-            m_cols{0} { // At this time we are not sure what the column size should be
-        for (auto &x: lst) {
-            m_cols = std::max(m_cols, x.size());
-        }
-        m_data = array_type(m_rows, m_cols);
-        auto it = lst.begin();
-        for (size_type i{0}; i < lst.size(); i++) {
-            std::copy(it->begin(), it->end(),
-                      m_data.begin() + i * m_cols); // copy current inner list
-            it++;
-        }
+        detail::copy_matrix_engine(*this, other);
     }
 
-    explicit dynamic_matrix_engine(size_type r, size_type c) : m_rows(r), m_cols(c),
-                                                               m_data(r * c) {};
+    template<typename U>
+    dynamic_matrix_engine(const std::initializer_list<std::initializer_list<U>> &lst) :
+            m_rows{lst.size()},
+            m_cols{lst.begin()->size()},
+            m_data(m_rows * m_cols) {
+        detail::check_init_list(lst);
+        detail::copy_matrix_engine(*this, lst);
+    }
 
-    explicit dynamic_matrix_engine(size_pair sz) : m_rows(sz.first), m_cols(sz.second),
-                                                   m_data(m_rows * m_cols) {};
+    explicit dynamic_matrix_engine(size_type r, size_type c) : m_rows{r}, m_cols{c},
+                                                               m_data(r * c) {}
 
 
     constexpr dynamic_matrix_engine &operator=(dynamic_matrix_engine &&) noexcept = default;
 
     constexpr dynamic_matrix_engine &operator=(dynamic_matrix_engine const &) = default;
 
-    reference operator[](size_type idx) {
+    template<typename Engine2>
+    dynamic_matrix_engine &operator=(const Engine2 &other) {
+        detail::check_engine_size(other, rows(), cols());
+        detail::copy_matrix_engine(*this, other);
+        return *this;
+    }
+
+
+    size_type rows() const noexcept {
+        return m_rows;
+    }
+
+    size_type cols() const noexcept {
+        return m_cols;
+    }
+
+    reference operator[](size_type idx) noexcept {
         return m_data[idx]; // no bound checking here
     }
 
-    const_reference operator[](size_type idx) const {
+    const_reference operator[](size_type idx) const noexcept {
         return m_data[idx]; // no bound checking here
     }
 
-    [[nodiscard]] constexpr size_pair size() noexcept {
-        return std::make_pair(m_cols, m_rows);
+    reference operator()(size_type r, size_type c) noexcept {
+        return m_data[c + r * cols()];
     }
 
-    [[nodiscard]] constexpr size_type data_size() noexcept {
+    const_reference operator()(size_type r, size_type c) const noexcept {
+        return m_data[c + r * cols()];
+    }
+
+    [[nodiscard]] size_tuple size() const noexcept {
+        return std::make_pair(m_rows, m_cols);
+    }
+
+    [[nodiscard]] size_type data_size() const noexcept {
         return m_data.size();
+    }
+
+    void resize(size_type r, size_type c) {
+        m_data.resize(r * c);
+        m_rows = r;
+        m_cols = c;
     }
 
     [[nodiscard]] constexpr bool empty() const {
         return m_data.empty();
-    }
-
-    constexpr size_type rows() noexcept {
-        return m_rows;
-    }
-
-    constexpr size_type cols() noexcept {
-        return m_cols;
-    }
-
-    decltype(auto) begin() noexcept {
-        return m_data.begin();
-    }
-
-    decltype(auto) end() noexcept {
-        return m_data.end();
-    }
-
-    decltype(auto) begin() const noexcept {
-        return m_data.begin();
-    }
-
-    decltype(auto) end() const noexcept {
-        return m_data.end();
     }
 
     size_type m_rows;

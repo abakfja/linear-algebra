@@ -1,7 +1,7 @@
 //
 // Created by abakfja on 4/4/21.
 //
-
+//
 #ifndef UBLAS_VECTOR_EXPRESSION_HPP
 #define UBLAS_VECTOR_EXPRESSION_HPP
 
@@ -59,6 +59,39 @@ inline decltype(auto) constexpr operator+(const LHS &lhs, const RHS &rhs) {
         return a + b;
     }, lhs, rhs};
 }
+
+
+template<class LHS, class RHS, typename = std::enable_if<
+        detail::is_bin_vec_op_ok<LHS, RHS>, bool>>
+inline decltype(auto) constexpr operator/(const LHS &lhs, const RHS &rhs) {
+    return vector_expr{[](auto a, auto b) {
+        return a / b;
+    }, lhs, rhs};
+}
+
+template<class LHS, class RHS>
+//        std::enable_if_t<
+//        detail::is_vector_or_expr_v<LHS> && detail::is_vector_or_expr_v<RHS>, bool> = false>
+inline decltype(auto) constexpr operator*(const LHS &lhs, const RHS &rhs) {
+    return vector_expr{[](auto a, auto b) {
+        return a * b;
+    }, lhs, rhs};
+}
+
+
+template<class LHS, class RHS, std::enable_if_t<
+        detail::is_vector_or_expr_v<LHS> && detail::is_vector_or_expr_v<RHS>, bool> = true>
+inline decltype(auto) constexpr operator*(const LHS &lhs, const RHS &rhs) {
+    using value_type = decltype(index_op(lhs, 0) * index_op(rhs, 0));
+    using size_type = std::size_t;
+    value_type it{};
+    check_engine_size(rhs, lhs.size());
+    for (size_type i{}; i < lhs.size(); i++) {
+        it += index_op(lhs, i) * index_op(rhs, i);
+    }
+    return it;
+}
+
 
 template<class LHS, class RHS, typename = std::enable_if<
         detail::is_bin_vec_op_ok<LHS, RHS>, bool>>

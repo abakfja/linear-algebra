@@ -8,98 +8,138 @@
 #include <boost/numeric/ublas/matrix/traits/expression_traits.hpp>
 #include <tuple>
 
-namespace boost::numeric::ublas::experimental {
-
-} // boost::numeric::ublas::experimental
-
 
 namespace boost::numeric::ublas::experimental {
+
+template<typename E>
+struct base_matrix_expression {
+    using expression_type = E;
+
+    constexpr auto operator()(std::size_t x, std::size_t y) const {
+        return static_cast<const E &>(*this)(x, y);
+    }
+
+    constexpr auto size() const {
+        return static_cast<const E &>(*this).size();
+    }
+
+    constexpr auto rows() const {
+        return static_cast<const E &>(*this).rows();
+    }
+
+    constexpr auto cols() const {
+        return static_cast<const E &>(*this).cols();
+    }
+};
 
 template<typename operand>
-constexpr inline auto index_op(operand a, std::size_t idx) {
-    if constexpr(detail::is_matrix_or_expr_v<operand>) {
-        return a[idx];
+constexpr inline auto subscript(const operand &a, std::size_t x, std::size_t y) {
+    if constexpr(detail::is_matrix_expr_v<operand>) {
+        return a(x, y);
     } else {
         return a;
     }
 }
 
+
 template<typename operand>
-constexpr inline std::size_t expr_rows(operand a) {
-    if constexpr(detail::is_matrix_or_expr_v<operand>) {
+constexpr inline std::size_t expr_rows(const operand &a) {
+    if constexpr(detail::is_matrix_expr_v<operand>) {
         return a.rows();
     } else {
         return 0;
     }
 }
 
+
 template<typename operand>
-constexpr inline std::size_t expr_cols(operand a) {
-    if constexpr(detail::is_matrix_or_expr_v<operand>) {
+constexpr inline std::size_t expr_cols(const operand &a) {
+    if constexpr(detail::is_matrix_expr_v<operand>) {
         return a.cols();
     } else {
         return 0;
     }
 }
 
+template<class operation, typename ... operands>
+struct matrix_expression
+        : public base_matrix_expression<matrix_expression<operation, operands...>> {
 
-template<typename operation, typename ... operands>
-class matrix_expr {
-public:
-    explicit matrix_expr(operation f_, operands const &... args_) : f(f_), args(args_...) {}
+    ~matrix_expression() = default;
 
-    auto operator[](std::size_t idx) const {
-        return std::apply([this, idx](operands const &... a) {
-            return f(index_op(a, idx)...);
+    matrix_expression() = default;
+
+    matrix_expression(const matrix_expression &) = delete;
+
+    matrix_expression(matrix_expression &&other) : f(std::move(other.f)), args(other.args) {
+    }
+
+    explicit matrix_expression(operation f_, operands const &... args_) : f(f_), args(args_...) {}
+
+    constexpr matrix_expression &operator=(matrix_expression &&l) noexcept = default;
+
+    matrix_expression &operator=(matrix_expression const &l) noexcept = delete;
+
+    constexpr auto operator()(std::size_t x, std::size_t y) const {
+        return std::apply([this, x, y](operands const &... a) {
+            return f(subscript(a, x, y)...);
         }, args);
     }
 
-    [[nodiscard]] constexpr std::pair<std::size_t, std::size_t> size() const {
+    constexpr auto size() const {
+        return std::make_pair(rows(), cols());
+
+    }
+
+    constexpr auto rows() const {
         return std::apply([this](operands const &... x) {
-            std::size_t a{}, b{};
+            std::size_t a{};
             ((a = std::max(a, expr_rows(x))), ...);
-            ((b = std::max(b, expr_cols(x))), ...);
-            return std::make_pair(a, b);
+            return a;
         }, args);
     }
 
-private:
+    constexpr auto cols() const {
+        return std::apply([this](operands const &... x) {
+            std::size_t a{};
+            ((a = std::max(a, expr_cols(x))), ...);
+            return a;
+        }, args);
+    }
+
     std::tuple<operands const &...> args;
     operation f;
 };
 
+template<class T, std::enable_if_t<detail::is_matrix_expr_v<T>, bool> = true>
+struct transpose_expression : public base_matrix_expression<transpose_expression<T>> {
 
-template<class LHS, class RHS, typename = std::enable_if<
-        detail::is_bin_mat_op_ok<LHS, RHS>, bool>>
-inline decltype(auto) constexpr operator*(const LHS &lhs, const RHS &rhs) {
-/**
- *
- */
-}
+    constexpr transpose_expression &operator=(transpose_expression &&l) noexcept = default;
 
-template<class LHS, class RHS, typename = std::enable_if<
-        detail::is_bin_mat_op_ok<LHS, RHS>, bool>>
-inline decltype(auto) constexpr operator+(const LHS &lhs, const RHS &rhs) {
-    return matrix_expr{[](auto a, auto b) {
-        return a + b;
-    }, lhs, rhs};
-}
+    transpose_expression &operator=(transpose_expression const &l) noexcept = delete;
 
-template<class LHS, class RHS, typename = std::enable_if<
-        detail::is_bin_mat_op_ok<LHS, RHS>, bool>>
-inline decltype(auto) constexpr operator-(const LHS &lhs, const RHS &rhs) {
-    return matrix_expr{[](auto a, auto b) {
-        return a - b;
-    }, lhs, rhs};
-}
+    transpose_expression(const T &_mat) : mat(_mat) {}
 
-template<class OP>
-inline decltype(auto) constexpr operator-(const OP &op) {
-    return matrix_expr{[](auto a) {
-        return -a;
-    }, op};
-}
+    constexpr auto operator()(std::size_t x, std::size_t y) const {
+        return mat(y, x);
+    }
+
+    constexpr auto size() const {
+        return std::make_pair(rows(), cols());
+
+    }
+
+    constexpr auto rows() const {
+        return mat.cols();
+    }
+
+    constexpr auto cols() const {
+        return mat.rows();
+    }
+
+    const T &mat;
+};
+
 
 }
-
 #endif //UBLAS_MATRIX_EXPRESSION_HPP

@@ -10,18 +10,21 @@
 #define BOOST_NUMERIC_UBLAS_MATRIX_H
 
 #include <boost/numeric/ublas/matrix/matrix_engine.hpp>
+#include <boost/numeric/ublas/matrix/matrix_view.hpp>
 #include <boost/numeric/ublas/matrix/matrix_expression.hpp>
+#include <boost/numeric/ublas/matrix/matrix_operators.hpp>
+#include <boost/numeric/ublas/matrix/slice.hpp>
 
 namespace boost::numeric::ublas::experimental {
 
 template<typename Engine>
-class matrix {
+class matrix : public base_matrix_expression<matrix<Engine>> {
 public:
     using engine_type = Engine;
     using array_type = typename engine_type::array_type;
 
     using size_type = typename engine_type::size_type;
-    using size_pair = typename engine_type::size_pair;
+    using size_tuple = typename engine_type::size_tuple;
     using difference_type = typename engine_type::difference_type;
 
     using value_type = typename engine_type::value_type;
@@ -42,6 +45,10 @@ public:
 
     using transpose_type = matrix<typename engine_type::transpose_type> &;
     using const_transpose_type = const matrix<typename engine_type::transpose_type> &;
+
+    using splice_type = splice<size_type>;
+    using submatrix_type = matrix<matrix_view_engine<engine_type, detail::read_write_view_tag>>;
+    using const_submatrix_type = matrix<matrix_view_engine<engine_type, detail::read_only_view_tag>>;
 
     /**
      * default destructor
@@ -65,9 +72,8 @@ public:
      */
     template<class Engine2>
     constexpr
-    matrix(const matrix<Engine2> &other) : expr_rep(other.size()) {
-        assert(expr_rep.size() == other.size());
-        std::copy(other.begin(), other.end(), begin());
+    matrix(const matrix<Engine2> &other) : data(other.rows(), other.cols()) {
+        data = other;
     }
 
     /**
@@ -76,7 +82,7 @@ public:
      * @param list 
      */
     template<typename U>
-    constexpr matrix(std::initializer_list<U> list): expr_rep(list) {}
+    constexpr matrix(std::initializer_list<std::initializer_list<U>> list): data(list) {}
 
     /**
      * c-tor for constructing a dynamic_size_matrix of size [row][column]
@@ -87,8 +93,7 @@ public:
      * @param v initial value of the matrix elements
      */
     template<typename Engine2=engine_type, typename = detail::enable_if_dynamic<Engine2>>
-    explicit constexpr matrix(size_type row, size_type col, value_type v = {}): expr_rep(row, col) {
-        std::fill(expr_rep.begin(), expr_rep.end(), v);
+    explicit constexpr matrix(size_type r, size_type c): data(r, c) {
     }
 
     /**
@@ -99,28 +104,17 @@ public:
      * @param v initial value of the matrix elements
      */
     template<typename Engine2=engine_type, typename = detail::enable_if_dynamic<Engine2>>
-    explicit constexpr matrix(size_pair sz, value_type v = {}): expr_rep(sz) {
-        std::fill(expr_rep.begin(), expr_rep.end(), v);
+    explicit constexpr matrix(size_tuple sz): data(sz) {
     }
 
-    /**
-     * Constructor to create a fixed_size_matrix and fill it with a value v 
-     * @tparam Engine2 
-     * @param v 
-     */
-    template<typename Engine2=engine_type, typename = detail::enable_if_static<Engine2>>
-    explicit constexpr matrix(value_type v = {}): expr_rep(v) {
-        std::fill(expr_rep.begin(), expr_rep.end(), v);
-    }
-
-    template<typename operation,
-            typename ... operands
-    >
+    template<typename E>
     constexpr
-    matrix(const matrix_expr<operation, operands...> expr): expr_rep(expr.size()) {
-        assert(size() == expr.size());
-        for (size_type i = 0; i < data_size(); i++) {
-            this->operator[](i) = expr[i];
+    matrix(const base_matrix_expression<E>& expr): data(expr.size().first, expr.size().second) {
+        detail::check_engine_size(expr, rows(), cols());
+        for (size_type i{}; i < rows(); i++) {
+            for (size_type j{}; j < cols(); j++) {
+                this->operator()(i, j) = expr(i, j);
+            }
         }
     }
 
@@ -136,11 +130,13 @@ public:
     template<typename engine2>
     constexpr matrix &operator=(const matrix<engine2> &other) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            expr_rep.resize(other.size().first, other.size().second);
+            if (other.rows() != rows() || other.cols() != cols()) {
+                data.resize(other.rows(), other.cols());
+            }
         } else {
-            assert(size() == other.size());
+            detail::check_engine_size(other.data, rows(), cols());
         }
-        std::copy(other.begin(), other.end(), expr_rep.begin());
+        data = other;
         return *this;
     }
 
@@ -152,25 +148,41 @@ public:
      * @param expr
      * @return
      */
-    template<typename operation, typename ... operands>
-    constexpr matrix &operator=(const matrix_expr<operation, operands...> expr) {
+    template<typename E>
+    constexpr matrix &operator=(const base_matrix_expression<E>& expr) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            expr_rep.resize(expr.size());
+            data.resize(expr.rows(), expr.cols());
         } else {
-            assert(size() == expr.size());
+            detail::check_engine_size(expr, rows(), cols());
         }
-        for (size_type i = 0; i < data_size(); i++) {
-            this->operator[](i) = expr[i];
+        for (size_type i{}; i < rows(); i++) {
+            for (size_type j{}; j < cols(); j++) {
+                this->operator()(i, j) = expr(i, j);
+            }
         }
         return *this;
     }
 
     template<typename engine2>
     constexpr bool operator==(const matrix<engine2> &other) const {
-        assert(size() == other.size());
+        detail::check_engine_size(other, rows(), cols());
         for (size_type i = 0; i < data_size(); i++) {
             if (this->operator[](i) != other[i]) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+
+    template<typename E>
+    constexpr bool operator==(const base_matrix_expression<E> &expr) const {
+        detail::check_engine_size(expr, rows(), cols());
+        for (size_type i{}; i < rows(); i++) {
+            for (size_type j{}; j < cols(); j++) {
+                if (this->operator()(i, j) != expr(i, j)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -181,55 +193,118 @@ public:
         return !(this->template operator==(other));
     }
 
+//    constexpr column_vector_type operator()(size_type c) const {
+//        return column_vector_type(detail::contructor_tag{}, data, c);
+//    }
+//
+//    constexpr row_vector_type operator()(size_type r) const {
+//        return row_vector_type(detail::contructor_tag{}, data, r);
+//    }
+
+    constexpr const_reference operator[](size_type idx) const noexcept {
+        return data[idx];
+    }
+
+    constexpr reference operator[](size_type idx) noexcept {
+        return data[idx];
+    }
+
+    constexpr const_reference operator()(size_type r, size_type c) const noexcept {
+        return data(r, c);
+    }
+
+
+    constexpr reference operator()(size_type r, size_type c) noexcept {
+        return data(r, c);
+    }
+
+    constexpr const_reference operator()(size_tuple sz) const noexcept {
+        auto[r, c] = sz;
+        return data(r, c);
+    }
+
+
+    constexpr reference operator()(size_tuple sz) noexcept {
+        auto[r, c] = sz;
+        return data(r, c);
+    }
+
+    constexpr const_submatrix_type operator()(size_type r, splice_type c) const noexcept {
+        return const_submatrix_type(detail::constructor_tag{}, data, r, 1, c.start(), c.size());
+    }
+
+    constexpr const_submatrix_type operator()(splice_type r, size_type c) const noexcept {
+        return const_submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c , 1);
+    }
+
+    constexpr const_submatrix_type operator()(splice_type r, splice_type c) const noexcept {
+        return const_submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c.start(), c.size());
+    }
+
+    constexpr submatrix_type operator()(size_type r, splice_type c) noexcept {
+        return submatrix_type(detail::constructor_tag{}, data, r, 1, c.start(), c.size());
+    }
+
+    constexpr submatrix_type operator()(splice_type r, size_type c) noexcept {
+        return submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c , 1);
+    }
+
+    constexpr submatrix_type operator()(splice_type r, splice_type c) noexcept {
+        return submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c.start(), c.size());
+    }
+
     [[nodiscard]] constexpr size_type data_size() const noexcept {
-        return expr_rep.data_size();
+        return data.data_size();
     }
 
-    [[nodiscard]] constexpr size_pair size() const noexcept {
-        return expr_rep.size();
+    [[nodiscard]] constexpr size_tuple size() const noexcept {
+        return {data.rows(), data.cols()};
     }
 
-    [[nodiscard]] constexpr size_pair rows() const noexcept {
-        return expr_rep.n_rows;
+    [[nodiscard]] constexpr size_type rows() const noexcept {
+        return data.rows();
     }
 
-    [[nodiscard]] constexpr size_pair cols() const noexcept {
-        return expr_rep.n_cols();
+    [[nodiscard]] constexpr size_type cols() const noexcept {
+        return data.cols();
     }
 
     [[nodiscard]] constexpr bool empty() const noexcept {
-        return expr_rep.empty();
+        return data.empty();
     }
 
     template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
     void resize(size_type r, size_type c) {
-        expr_rep.resize(r, c);
+        data.resize(r, c);
     }
 
     template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
-    void resize(size_pair sz) {
-        expr_rep.resize(sz.first, sz.second);
-    }
-
-    constexpr auto begin() noexcept {
-        return expr_rep.begin();
-    }
-
-    constexpr auto end() noexcept {
-        return expr_rep.end();
-    }
-
-    constexpr auto begin() const noexcept {
-        return expr_rep.begin();
-    }
-
-    constexpr auto end() const noexcept {
-        return expr_rep.end();
+    void resize(size_tuple sz) {
+        data.resize(sz.first, sz.second);
     }
 
 private:
-    engine_type expr_rep;
+    template<class Engine2, class Layout2>
+    friend
+    class vector;
+
+    template<class Engine2>
+    friend
+    class matrix;
+
+
+    template<class Engine2, class... args>
+    constexpr
+    matrix(detail::constructor_tag, Engine2 &&eng, args &&... _args) : data(eng, _args...) {}
+
+    engine_type data;
 };
+
+template<typename T>
+using dmatrix = matrix<dynamic_matrix_engine<T>>;
+
+template<typename T, std::size_t R, std::size_t C>
+using fmatrix = matrix<fixed_matrix_engine<T, R, C>>;
 
 } // namespace boost::numeric::ublas::experimental
 

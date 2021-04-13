@@ -8,7 +8,7 @@
 #include <vector>
 #include <array>
 
-#include <boost/numeric/ublas/matrix/tags.hpp>
+#include <boost/numeric/ublas/matrix/detail/tags.hpp>
 
 namespace boost::numeric::ublas::experimental {
 

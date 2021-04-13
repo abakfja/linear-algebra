@@ -9,7 +9,7 @@
 #ifndef BOOST_NUMERIC_UBLAS_VECTOR_H
 #define BOOST_NUMERIC_UBLAS_VECTOR_H
 
-#include <boost/numeric/ublas/matrix/helper.hpp>
+#include <boost/numeric/ublas/matrix/detail/helper.hpp>
 #include <boost/numeric/ublas/matrix/vector_engine.hpp>
 #include <boost/numeric/ublas/matrix/vector_expression.hpp>
 #include <boost/numeric/ublas/matrix/vector_view.hpp>
@@ -57,12 +57,12 @@ public:
     /**
      * default move constructor
      */
-//    constexpr vector(vector &&) noexcept = default;
+    constexpr vector(vector &&) noexcept = default;
 
     /**
      * default copy constructor
      */
-//    constexpr vector(const vector &) = default;
+    constexpr vector(const vector &) = default;
 
     /**
      * Copy constructor for cross engine conversion of vectors
@@ -72,7 +72,7 @@ public:
     template<class Engine2>
     constexpr
     vector(const vector<Engine2, layout_type> &other) : data(other.size()) {
-        std::copy(other.begin(), other.end(), begin());
+        data = other;
     }
 
     /**
@@ -91,25 +91,14 @@ public:
      * @param v initial value of the vector elements
      */
     template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
-    explicit constexpr vector(size_type n, value_type v = {}) : data(n) {
-        std::fill(data.begin(), data.end(), v);
-    }
-
-    /**
-     * Constructor to create a fixed_size_vector and fill it with a value v
-     * @tparam Engine2
-     * @param v initial value of the vector
-     */
-    template<class Engine2 = engine_type, typename = detail::enable_if_static<Engine2>>
-    constexpr explicit vector(value_type v): data() {
-        std::fill(data.begin(), data.end(), v);
+    explicit constexpr vector(size_type n) : data(n) {
     }
 
     template<typename operation,
             typename ... operands
     >
     constexpr
-    vector(const vector_expr<operation, operands...> expr): data(expr.size()) {
+    vector(const vector_expr<operation, operands...>& expr): data(expr.size()) {
         check_engine_size(expr, size());
         for (size_type i = 0; i < size(); i++) {
             this->operator[](i) = expr[i];
@@ -118,11 +107,7 @@ public:
 
     constexpr vector &operator=(vector &&) noexcept = default;
 
-    constexpr vector &operator=(vector const & other) {
-        check_engine_size(other.data, size());
-        std::copy(other.begin(), other.end(), data.begin());
-        return *this;
-    }
+    constexpr vector &operator=(vector const &) = default;
 
     // copy assignment
     template<typename Engine2>
@@ -166,9 +151,18 @@ public:
     }
 
     constexpr vector<vector_view_engine<engine_type, detail::read_only_view_tag>, layout_type>
+    operator()(std::pair<size_type, size_type> slice) const {
+        return vector<vector_view_engine<engine_type,
+                detail::read_only_view_tag>, layout_type>(detail::constructor_tag{}, data,
+                                             slice.first,
+                                             slice.second - slice.first);
+    }
+
+
+    constexpr vector<vector_view_engine<engine_type, detail::read_write_view_tag>, layout_type>
     operator()(std::pair<size_type, size_type> slice) {
         return vector<vector_view_engine<engine_type,
-                detail::read_only_view_tag>>(detail::constructor_tag{}, data,
+                detail::read_write_view_tag>, layout_type>(detail::constructor_tag{}, data,
                                              slice.first,
                                              slice.second - slice.first);
     }
@@ -213,6 +207,9 @@ public:
 private:
     template<class Engine2, class layout2>
     friend class vector;
+
+    template<class Engine2>
+    friend class matrix;
 
     template<class Engine2, class... args>
     constexpr vector(detail::constructor_tag, Engine2 &&eng, args &&... _args) : data(eng, _args...) {

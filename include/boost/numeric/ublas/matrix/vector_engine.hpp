@@ -23,9 +23,9 @@ namespace boost::numeric::ublas::experimental {
 
 template<typename T, std::size_t N>
 struct fixed_vector_engine {
-//    static_assert(std::is_object<T>::value,
-//                  "A vector's ElementType must be an object type (not a "
-//                  "reference type or void)");
+    static_assert(std::is_object<T>::value,
+                  "A vector's ElementType must be an object type (not a "
+                  "reference type or void)");
 
     using array_type = std::array<T, N>;
     using storage_traits_type = storage_traits<array_type>;
@@ -62,7 +62,7 @@ struct fixed_vector_engine {
 
     template<class Engine2>
     constexpr fixed_vector_engine(const Engine2 &rhs): m_data() {
-        assert(rhs.size() <= m_elems); // bound checking
+        check_engine_size(rhs, size());
         std::copy(rhs.begin(), rhs.end(), m_data.begin());
     }
 
@@ -122,9 +122,9 @@ struct fixed_vector_engine {
 
 template<typename T>
 struct dynamic_vector_engine {
-//    static_assert(std::is_object<T>::value,
-//                  "A vector's ElementType must be an object type (not a "
-//                  "reference type or void)");
+    static_assert(std::is_object<T>::value,
+                  "A vector's ElementType must be an object type (not a "
+                  "reference type or void)");
 
     using scalar_type = T;
 
