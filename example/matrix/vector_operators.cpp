@@ -5,7 +5,7 @@
 #include <boost/numeric/ublas/matrix/vector.hpp>
 #include <iostream>
 
-using namespace boost::numeric::ublas::experimental;
+using namespace la;
 
 int main() {
     using fvector3 = fvector<int, 3>;

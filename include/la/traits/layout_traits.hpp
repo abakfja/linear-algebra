@@ -5,7 +5,7 @@
 #ifndef UBLAS_LAYOUT_TRAITS_HPP
 #define UBLAS_LAYOUT_TRAITS_HPP
 
-namespace boost::numeric::ublas::experimental::layout {
+namespace la::layout {
 
 struct column_major;
 struct row_major;

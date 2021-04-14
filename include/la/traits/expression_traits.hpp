@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<class Engine, class Layout>
 class vector;
@@ -18,10 +18,10 @@ struct base_vector_expression;
 template<typename operation, typename ... operands>
 struct vector_expression;
 
-}  // namespace boost::numeric::ublas::experimental
+}  // namespace la
 
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace la::detail {
 
 template<typename T>
 struct is_vector_expr : std::false_type {
@@ -45,10 +45,10 @@ using is_vector_expr_t = typename is_vector_expr<std::decay<T>>::type;
 template<typename T>
 inline constexpr bool is_vector_expr_v = is_vector_expr<T>::value;
 
-}  // namespace boost::numeric::ublas::experimental::detail
+}  // namespace la::detail
 
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<class Engine>
 class matrix;
@@ -62,9 +62,9 @@ struct matrix_expression;
 template<class T>
 struct transpose_expression;
 
-}  // namespace boost::numeric::ublas::experimental
+}  // namespace la
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace la::detail {
 
 template<class LHS, class RHS>
 struct bin_mat_op_ok : std::false_type {
@@ -89,9 +89,9 @@ using bin_mat_op_ok_t = typename bin_mat_op_ok<std::decay_t<LHS>,
 template<typename LHS, typename RHS>
 inline constexpr bool is_bin_mat_op_ok = bin_mat_op_ok_t<LHS, RHS>::value;
 
-}  // namespace boost::numeric::ublas::experimental::detail
+}  // namespace la::detail
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace la::detail {
 
 template<typename T>
 struct is_matrix_expr : std::false_type {
@@ -116,6 +116,6 @@ using is_matrix_expr_t = typename is_matrix_expr<std::decay<T>>::type;
 template<typename T>
 inline constexpr bool is_matrix_expr_v = is_matrix_expr<T>::value;
 
-}  // namespace boost::numeric::ublas::experimental::detail
+}  // namespace la::detail
 
 #endif  //UBLAS_EXPRESSION_TRAITS_HPP

@@ -5,7 +5,7 @@
 #ifndef UBLAS_ENGINE_TRAITS_HPP
 #define UBLAS_ENGINE_TRAITS_HPP
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename T>
 struct dynamic_matrix_engine;
@@ -21,7 +21,7 @@ struct fixed_vector_engine;
 
 }
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace la::detail {
 
 /// @brief checks if type is a matrix_old
 template<typename T>
@@ -63,7 +63,7 @@ struct is_dynamic<T &> : is_dynamic<T> {
 template<typename T>
 using enable_if_dynamic = typename std::enable_if_t<is_dynamic_v<T>, bool>;
 
-} // namespace boost::numeric::ublas::experimental::detail
+} // namespace la::detail
 
 
 #endif //UBLAS_ENGINE_TRAITS_HPP

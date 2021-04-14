@@ -5,7 +5,7 @@
 #ifndef UBLAS_SLICE_HPP
 #define UBLAS_SLICE_HPP
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 template<typename T = std::size_t>
 struct slice {
 

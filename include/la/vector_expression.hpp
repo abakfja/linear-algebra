@@ -5,11 +5,11 @@
 #ifndef UBLAS_VECTOR_EXPRESSION_HPP
 #define UBLAS_VECTOR_EXPRESSION_HPP
 
-#include <boost/numeric/ublas/matrix/traits/expression_traits.hpp>
+#include <la/traits/expression_traits.hpp>
 #include <tuple>
 
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename E>
 struct base_vector_expression {
@@ -84,6 +84,6 @@ struct vector_expression
     operation f;
 };
 
-} // namespace boost::numeric::ublas::experimental
+} // namespace la
 
 #endif //UBLAS_VECTOR_EXPRESSION_HPP

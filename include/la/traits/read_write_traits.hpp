@@ -5,9 +5,9 @@
 #ifndef UBLAS_READ_WRITE_TRAITS_H
 #define UBLAS_READ_WRITE_TRAITS_H
 
-#include <boost/numeric/ublas/matrix/detail/tags.hpp>
+#include <la/detail/tags.hpp>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename Engine, typename VT>
 struct read_write_traits;

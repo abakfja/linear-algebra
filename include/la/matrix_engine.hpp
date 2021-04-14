@@ -15,11 +15,11 @@
 #include <tuple>
 #include <cassert>
 
-#include <boost/numeric/ublas/matrix/detail/helper.hpp>
-#include <boost/numeric/ublas/matrix/traits/storage_traits.hpp>
-#include <boost/numeric/ublas/matrix/traits/engine_traits.hpp>
+#include <la/detail/helper.hpp>
+#include <la/traits/storage_traits.hpp>
+#include <la/traits/engine_traits.hpp>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename T, std::size_t R, std::size_t C>
 struct fixed_matrix_engine {
@@ -252,5 +252,5 @@ struct is_dynamic<dynamic_matrix_engine<T>> : std::true_type {
 };
 } // detail
 
-} // namespace boost::numeric::ublas::experimental
+} // namespace la
 #endif // BOOST_NUMERIC_UBLAS_MATRIX_ENGINE_H

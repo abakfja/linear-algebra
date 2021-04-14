@@ -5,9 +5,9 @@
 #ifndef UBLAS_MATRIX_VIEW_HPP
 #define UBLAS_MATRIX_VIEW_HPP
 
-#include <boost/numeric/ublas/matrix/traits/read_write_traits.hpp>
+#include <la/traits/read_write_traits.hpp>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 /**
  * A non-owning view for a matrix(i.e 1D contiguous range)
