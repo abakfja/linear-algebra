@@ -32,8 +32,9 @@ struct base_matrix_expression {
     }
 };
 
+namespace detail {
 template<typename operand>
-constexpr inline auto subscript(const operand &a, std::size_t x, std::size_t y) {
+constexpr inline auto mat_subscript(const operand &a, std::size_t x, std::size_t y) {
     if constexpr(detail::is_matrix_expr_v<operand>) {
         return a(x, y);
     } else {
@@ -43,7 +44,7 @@ constexpr inline auto subscript(const operand &a, std::size_t x, std::size_t y) 
 
 
 template<typename operand>
-constexpr inline std::size_t expr_rows(const operand &a) {
+constexpr inline std::size_t mat_expr_rows(const operand &a) {
     if constexpr(detail::is_matrix_expr_v<operand>) {
         return a.rows();
     } else {
@@ -53,13 +54,15 @@ constexpr inline std::size_t expr_rows(const operand &a) {
 
 
 template<typename operand>
-constexpr inline std::size_t expr_cols(const operand &a) {
+constexpr inline std::size_t mat_expr_cols(const operand &a) {
     if constexpr(detail::is_matrix_expr_v<operand>) {
         return a.cols();
     } else {
         return 0;
     }
 }
+
+} // namespace detail
 
 template<class operation, typename ... operands>
 struct matrix_expression
@@ -82,7 +85,7 @@ struct matrix_expression
 
     constexpr auto operator()(std::size_t x, std::size_t y) const {
         return std::apply([this, x, y](operands const &... a) {
-            return f(subscript(a, x, y)...);
+            return f(detail::mat_subscript(a, x, y)...);
         }, args);
     }
 
@@ -94,7 +97,7 @@ struct matrix_expression
     constexpr auto rows() const {
         return std::apply([this](operands const &... x) {
             std::size_t a{};
-            ((a = std::max(a, expr_rows(x))), ...);
+            ((a = std::max(a, static_cast<std::size_t>(detail::mat_expr_rows(x)))), ...);
             return a;
         }, args);
     }
@@ -102,7 +105,7 @@ struct matrix_expression
     constexpr auto cols() const {
         return std::apply([this](operands const &... x) {
             std::size_t a{};
-            ((a = std::max(a, expr_cols(x))), ...);
+            ((a = std::max(a, static_cast<std::size_t>(detail::mat_expr_cols(x)))), ...);
             return a;
         }, args);
     }
@@ -111,9 +114,9 @@ struct matrix_expression
     operation f;
 };
 
-template<class T, std::enable_if_t<detail::is_matrix_expr_v<T>, bool> = true>
+template<class T>
 struct transpose_expression : public base_matrix_expression<transpose_expression<T>> {
-
+    static_assert(detail::is_matrix_expr_v<T>);
     constexpr transpose_expression &operator=(transpose_expression &&l) noexcept = default;
 
     transpose_expression &operator=(transpose_expression const &l) noexcept = delete;

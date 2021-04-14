@@ -1,5 +1,5 @@
 //
-// Created by fragrant on 4/13/21.
+// Created by abakfja on 4/13/21.
 //
 
 #ifndef UBLAS_SLICE_HPP
@@ -7,25 +7,25 @@
 
 namespace boost::numeric::ublas::experimental {
 template<typename T = std::size_t>
-struct splice {
+struct slice {
 
-    splice() = delete;
+    slice() = delete;
 
-    constexpr splice(T start, T end) : m_start{start}, m_elems{end - start} {
+    constexpr slice(T start, T end) : m_start{start}, m_elems{end - start} {
         if (start > end) {
             m_elems = 0;
         }
     }
 
-    constexpr splice(const splice &) = default;
+    constexpr slice(const slice &) = default;
 
-    constexpr splice(splice &&) noexcept = default;
+    constexpr slice(slice &&) noexcept = default;
 
-    bool operator==(const splice &rhs) const {
+    bool operator==(const slice &rhs) const {
         return std::tie(m_start, m_elems) == std::tie(rhs.m_start, rhs.m_elems);
     }
 
-    bool operator!=(const splice &rhs) const {
+    bool operator!=(const slice &rhs) const {
         return !(rhs == *this);
     }
 

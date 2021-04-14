@@ -12,14 +12,16 @@
 #include <boost/numeric/ublas/matrix/detail/helper.hpp>
 #include <boost/numeric/ublas/matrix/vector_engine.hpp>
 #include <boost/numeric/ublas/matrix/vector_expression.hpp>
+#include <boost/numeric/ublas/matrix/vector_operators.hpp>
 #include <boost/numeric/ublas/matrix/vector_view.hpp>
 #include <boost/numeric/ublas/matrix/traits/layout_traits.hpp>
+#include <boost/numeric/ublas/matrix/slice.hpp>
 
 
 namespace boost::numeric::ublas::experimental {
 
 template<typename Engine, typename Layout = layout::row_major>
-class vector {
+class vector : public base_vector_expression<vector<Engine, Layout>> {
 public:
     using engine_type = Engine;
     using layout_type = Layout;
@@ -48,6 +50,10 @@ public:
             typename layout_type::transpose_type> &;
     using const_transpose_type = const vector<typename engine_type::transpose_type,
             typename layout_type::transpose_type> &;
+
+    using slice_type = slice<size_type>;
+    using subvector_type = vector<vector_view_engine<engine_type, detail::read_write_view_tag>>;
+    using const_subvector_type = vector<vector_view_engine<engine_type, detail::read_only_view_tag>>;
 
     /**
      * default destructor
@@ -94,12 +100,10 @@ public:
     explicit constexpr vector(size_type n) : data(n) {
     }
 
-    template<typename operation,
-            typename ... operands
-    >
+    template<typename E>
     constexpr
-    vector(const vector_expr<operation, operands...>& expr): data(expr.size()) {
-        check_engine_size(expr, size());
+    vector(const base_vector_expression<E> &expr): data(expr.size()) {
+        detail::check_engine_size(expr, size());
         for (size_type i = 0; i < size(); i++) {
             this->operator[](i) = expr[i];
         }
@@ -113,20 +117,24 @@ public:
     template<typename Engine2>
     constexpr vector &operator=(const vector<Engine2, layout_type> &other) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            data.resize(other.size());
+            if (other.size() != size()) {
+                data.resize(other.size());
+            }
         } else {
-            check_engine_size(other.data, size());
+            detail::check_engine_size(other.data, size());
         }
-        std::copy(other.begin(), other.end(), data.begin());
+        data = other;
         return *this;
     }
 
-    template<typename operation, typename ... operands>
-    constexpr vector &operator=(const vector_expr<operation, operands...> expr) {
+    template<typename E>
+    constexpr vector &operator=(const base_vector_expression<E> &expr) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            data.resize(expr.size());
+            if (expr.size() != size()) {
+                data.resize(expr.size());
+            }
         } else {
-            check_engine_size(expr, size());
+            detail::check_engine_size(expr, size());
         }
         for (size_type i = 0; i < size(); i++) {
             this->operator[](i) = static_cast<value_type>(expr[i]);
@@ -136,7 +144,23 @@ public:
 
     template<typename engine2>
     bool operator==(const vector<engine2, layout_type> &other) const {
-        check_engine_size(other, size());
+        if (size() != other.size()) {
+            return false;
+        }
+        for (size_type i = 0; i < size(); i++) {
+            if (this->operator[](i) != other[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    template<typename E>
+    constexpr bool operator==(const base_vector_expression<E> &other) const {
+        if (size() != other.size()) {
+            return false;
+        }
         for (size_type i = 0; i < size(); i++) {
             if (this->operator[](i) != other[i]) {
                 return false;
@@ -150,21 +174,19 @@ public:
         return !(this->template operator==(other));
     }
 
-    constexpr vector<vector_view_engine<engine_type, detail::read_only_view_tag>, layout_type>
-    operator()(std::pair<size_type, size_type> slice) const {
-        return vector<vector_view_engine<engine_type,
-                detail::read_only_view_tag>, layout_type>(detail::constructor_tag{}, data,
-                                             slice.first,
-                                             slice.second - slice.first);
+    constexpr const_subvector_type
+    operator()(slice_type slice) const {
+        return const_subvector_type(detail::constructor_tag{}, data,
+                                    slice.first,
+                                    slice.second - slice.first);
     }
 
 
-    constexpr vector<vector_view_engine<engine_type, detail::read_write_view_tag>, layout_type>
-    operator()(std::pair<size_type, size_type> slice) {
-        return vector<vector_view_engine<engine_type,
-                detail::read_write_view_tag>, layout_type>(detail::constructor_tag{}, data,
-                                             slice.first,
-                                             slice.second - slice.first);
+    constexpr subvector_type
+    operator()(slice_type slice) {
+        return subvector_type(detail::constructor_tag{}, data,
+                              slice.first,
+                              slice.second - slice.first);
     }
 
     constexpr const_reference operator[](size_type idx) const noexcept {
@@ -206,17 +228,46 @@ public:
 
 private:
     template<class Engine2, class layout2>
-    friend class vector;
+    friend
+    class vector;
 
     template<class Engine2>
-    friend class matrix;
+    friend
+    class matrix;
 
     template<class Engine2, class... args>
-    constexpr vector(detail::constructor_tag, Engine2 &&eng, args &&... _args) : data(eng, _args...) {
+    constexpr
+    vector(detail::constructor_tag, Engine2 &&eng, args &&... _args) : data(eng, _args...) {
     }
 
     engine_type data;
 };
+
+template<typename T>
+using dvector = vector<dynamic_vector_engine<T>>;
+
+template<typename T, std::size_t N>
+using fvector = vector<fixed_vector_engine<T, N>>;
+
+template<typename T>
+using d_col_vector = vector<dynamic_vector_engine<T>, layout::column_major>;
+
+template<typename T, std::size_t N>
+using f_col_vector = vector<fixed_vector_engine<T, N>, layout::column_major>;
+
+template<typename T>
+inline decltype(auto) constexpr
+zeros(std::size_t n) {
+    return dvector<T>(n);
+}
+
+template<typename T, std::size_t N>
+inline decltype(auto) constexpr
+zeros(std::size_t n) {
+    auto &x = fvector<T, N>();
+    std::fill(x.begin(), x.end(), T{});
+    return x;
+}
 
 } // namespace boost::numeric::ublas::experimental
 

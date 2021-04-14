@@ -24,7 +24,7 @@ namespace boost::numeric::ublas::experimental {
 template<typename T, std::size_t R, std::size_t C>
 struct fixed_matrix_engine {
     static_assert(std::is_object<T>::value,
-                  "A matrix's ElementType must be an object type (not a "
+                  "A matrix's value_type must be an object type (not a "
                   "reference type or void)");
 
     using array_type = std::array<T, R * C>;
@@ -124,7 +124,7 @@ struct fixed_matrix_engine {
 template<typename T>
 struct dynamic_matrix_engine {
     static_assert(std::is_object<T>::value,
-                  "A vector's ElementType must be an object type (not a "
+                  "A vector's value_type must be an object type (not a "
                   "reference type or void)");
     using scalar_type = T;
 
@@ -241,9 +241,8 @@ struct dynamic_matrix_engine {
     array_type m_data;
 };
 
-} // namespace boost::numeric::ublas::experimental
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace detail {
 template<typename T, std::size_t R, std::size_t C>
 struct is_static<fixed_matrix_engine<T, R, C>> : std::true_type {
 };
@@ -251,7 +250,7 @@ struct is_static<fixed_matrix_engine<T, R, C>> : std::true_type {
 template<typename T>
 struct is_dynamic<dynamic_matrix_engine<T>> : std::true_type {
 };
+} // detail
 
-} // namespace boost::numeric::ublas::experimental::detail
-
+} // namespace boost::numeric::ublas::experimental
 #endif // BOOST_NUMERIC_UBLAS_MATRIX_ENGINE_H

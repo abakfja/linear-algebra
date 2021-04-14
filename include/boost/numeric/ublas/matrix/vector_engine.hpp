@@ -15,7 +15,7 @@
 #include <tuple>
 #include <cassert>
 
-#include <boost/numeric/ublas/matrix/helper.hpp>
+#include <boost/numeric/ublas/matrix/detail/helper.hpp>
 #include <boost/numeric/ublas/matrix/traits/storage_traits.hpp>
 #include <boost/numeric/ublas/matrix/traits/engine_traits.hpp>
 
@@ -24,7 +24,7 @@ namespace boost::numeric::ublas::experimental {
 template<typename T, std::size_t N>
 struct fixed_vector_engine {
     static_assert(std::is_object<T>::value,
-                  "A vector's ElementType must be an object type (not a "
+                  "A vector's value_type must be an object type (not a "
                   "reference type or void)");
 
     using array_type = std::array<T, N>;
@@ -61,15 +61,15 @@ struct fixed_vector_engine {
     constexpr fixed_vector_engine(self_type &&other) noexcept = default;
 
     template<class Engine2>
-    constexpr fixed_vector_engine(const Engine2 &rhs): m_data() {
-        check_engine_size(rhs, size());
-        std::copy(rhs.begin(), rhs.end(), m_data.begin());
+    constexpr fixed_vector_engine(const Engine2 &other): m_data() {
+        detail::check_engine_size(other, size());
+        detail::copy_vector_engine(*this, other);
     }
 
     template<typename U>
     constexpr fixed_vector_engine(std::initializer_list<U> lst) {
-        check_init_list(lst, size());
-        std::copy(lst.begin(), lst.end(), m_data.begin());
+        detail::check_init_list(lst, size());
+        detail::copy_vector_engine(*this, lst);
     }
 
     constexpr explicit fixed_vector_engine(size_type s) : m_data() {
@@ -123,7 +123,7 @@ struct fixed_vector_engine {
 template<typename T>
 struct dynamic_vector_engine {
     static_assert(std::is_object<T>::value,
-                  "A vector's ElementType must be an object type (not a "
+                  "A vector's value_type must be an object type (not a "
                   "reference type or void)");
 
     using scalar_type = T;
@@ -163,14 +163,14 @@ struct dynamic_vector_engine {
 
 
     template<class Engine2>
-    constexpr dynamic_vector_engine(const Engine2 &rhs): m_elems{rhs.size()}, m_data(m_elems) {
-        std::copy(rhs.begin(), rhs.end(), m_data.begin());
+    constexpr dynamic_vector_engine(const Engine2 &other): m_elems{other.size()}, m_data(m_elems) {
+        detail::copy_vector_engine(*this, other);
     }
 
     template<typename U>
     dynamic_vector_engine(std::initializer_list<U> lst) : m_elems{lst.size()},
                                                           m_data(m_elems) {
-        std::copy(lst.begin(), lst.end(), m_data.begin());
+        detail::copy_vector_engine(*this, lst);
     }
 
     explicit dynamic_vector_engine(size_type n) : m_elems{n}, m_data(m_elems) {
@@ -179,6 +179,13 @@ struct dynamic_vector_engine {
     constexpr dynamic_vector_engine &operator=(dynamic_vector_engine &&) noexcept = default;
 
     constexpr dynamic_vector_engine &operator=(dynamic_vector_engine const &) = default;
+
+    template<typename Engine2>
+    dynamic_vector_engine &operator=(const Engine2 &other) {
+        detail::check_engine_size(other, size());
+        detail::copy_vector_engine(*this, other);
+        return *this;
+    }
 
     reference operator[](size_type idx) noexcept {
         return m_data[idx]; // no bound checking here
@@ -221,9 +228,8 @@ struct dynamic_vector_engine {
     array_type m_data;
 };
 
-} // namespace boost::numeric::ublas::experimental
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace detail {
 template<typename T, std::size_t N>
 struct is_static<fixed_vector_engine<T, N>> : std::true_type {
 };
@@ -231,7 +237,8 @@ struct is_static<fixed_vector_engine<T, N>> : std::true_type {
 template<typename T>
 struct is_dynamic<dynamic_vector_engine<T>> : std::true_type {
 };
+} // detail
 
-} // namespace boost::numeric::ublas::experimental::detail
+} // namespace boost::numeric::ublas::experimental
 
 #endif // BOOST_NUMERIC_UBLAS_VECTOR_ENGINE_H

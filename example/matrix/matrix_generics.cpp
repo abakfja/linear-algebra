@@ -1,8 +1,8 @@
 //
 // Created by abakfja on 3/12/21.
 //
-#include <iostream>
 #include <boost/numeric/ublas/matrix/matrix.hpp>
+#include <iostream>
 
 using namespace boost::numeric::ublas::experimental;
 
@@ -44,7 +44,6 @@ int main() {
             {0, 0, 0},
             {0, 0, 0}
     };
-    std::cout << (a == b + a) << std::endl;
 
     for (int i = 0; i < a.rows(); i++) {
         for (int j = 0; j < a.cols(); j++) {
@@ -60,6 +59,7 @@ int main() {
     }
 
     for (int i = 0; i < a.data_size(); i++) { // data_size return rows * cols
+        a[i] = i;
         std::cout << a[i] << " "; // assign via [] using zero based index
     }
 }

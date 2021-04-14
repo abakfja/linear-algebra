@@ -1,5 +1,5 @@
 //
-// Created by fragrant on 4/9/21.
+// Created by abakfja on 4/9/21.
 //
 
 #ifndef UBLAS_MATRIX_VIEW_HPP

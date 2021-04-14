@@ -46,7 +46,7 @@ public:
     using transpose_type = matrix<typename engine_type::transpose_type> &;
     using const_transpose_type = const matrix<typename engine_type::transpose_type> &;
 
-    using splice_type = splice<size_type>;
+    using slice_type = slice<size_type>;
     using submatrix_type = matrix<matrix_view_engine<engine_type, detail::read_write_view_tag>>;
     using const_submatrix_type = matrix<matrix_view_engine<engine_type, detail::read_only_view_tag>>;
 
@@ -104,12 +104,12 @@ public:
      * @param v initial value of the matrix elements
      */
     template<typename Engine2=engine_type, typename = detail::enable_if_dynamic<Engine2>>
-    explicit constexpr matrix(size_tuple sz): data(sz) {
+    explicit constexpr matrix(size_tuple sz): data(sz.first, sz.second) {
     }
 
     template<typename E>
     constexpr
-    matrix(const base_matrix_expression<E>& expr): data(expr.size().first, expr.size().second) {
+    matrix(const base_matrix_expression<E> &expr): data(expr.size().first, expr.size().second) {
         detail::check_engine_size(expr, rows(), cols());
         for (size_type i{}; i < rows(); i++) {
             for (size_type j{}; j < cols(); j++) {
@@ -149,9 +149,11 @@ public:
      * @return
      */
     template<typename E>
-    constexpr matrix &operator=(const base_matrix_expression<E>& expr) {
+    constexpr matrix &operator=(const base_matrix_expression<E> &expr) {
         if constexpr (detail::is_dynamic_v<engine_type>) {
-            data.resize(expr.rows(), expr.cols());
+            if (expr.rows() != rows() || expr.cols() != cols()) {
+                data.resize(expr.rows(), expr.cols());
+            }
         } else {
             detail::check_engine_size(expr, rows(), cols());
         }
@@ -165,10 +167,14 @@ public:
 
     template<typename engine2>
     constexpr bool operator==(const matrix<engine2> &other) const {
-        detail::check_engine_size(other, rows(), cols());
-        for (size_type i = 0; i < data_size(); i++) {
-            if (this->operator[](i) != other[i]) {
-                return false;
+        if (rows() != other.rows() || cols() != other.cols()) {
+            return false;
+        }
+        for (size_type i{}; i < rows(); i++) {
+            for (size_type j{}; j < cols(); j++) {
+                if (this->operator()(i, j) != other(i, j)) {
+                    return false;
+                }
             }
         }
         return true;
@@ -176,11 +182,13 @@ public:
 
 
     template<typename E>
-    constexpr bool operator==(const base_matrix_expression<E> &expr) const {
-        detail::check_engine_size(expr, rows(), cols());
+    constexpr bool operator==(const base_matrix_expression<E> &other) const {
+        if (rows() != other.rows() || cols() != other.cols()) {
+            return false;
+        }
         for (size_type i{}; i < rows(); i++) {
             for (size_type j{}; j < cols(); j++) {
-                if (this->operator()(i, j) != expr(i, j)) {
+                if (this->operator()(i, j) != other(i, j)) {
                     return false;
                 }
             }
@@ -229,28 +237,30 @@ public:
         return data(r, c);
     }
 
-    constexpr const_submatrix_type operator()(size_type r, splice_type c) const noexcept {
+    constexpr const_submatrix_type operator()(size_type r, slice_type c) const noexcept {
         return const_submatrix_type(detail::constructor_tag{}, data, r, 1, c.start(), c.size());
     }
 
-    constexpr const_submatrix_type operator()(splice_type r, size_type c) const noexcept {
-        return const_submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c , 1);
+    constexpr const_submatrix_type operator()(slice_type r, size_type c) const noexcept {
+        return const_submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c, 1);
     }
 
-    constexpr const_submatrix_type operator()(splice_type r, splice_type c) const noexcept {
-        return const_submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c.start(), c.size());
+    constexpr const_submatrix_type operator()(slice_type r, slice_type c) const noexcept {
+        return const_submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c.start(),
+                                    c.size());
     }
 
-    constexpr submatrix_type operator()(size_type r, splice_type c) noexcept {
+    constexpr submatrix_type operator()(size_type r, slice_type c) noexcept {
         return submatrix_type(detail::constructor_tag{}, data, r, 1, c.start(), c.size());
     }
 
-    constexpr submatrix_type operator()(splice_type r, size_type c) noexcept {
-        return submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c , 1);
+    constexpr submatrix_type operator()(slice_type r, size_type c) noexcept {
+        return submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c, 1);
     }
 
-    constexpr submatrix_type operator()(splice_type r, splice_type c) noexcept {
-        return submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c.start(), c.size());
+    constexpr submatrix_type operator()(slice_type r, slice_type c) noexcept {
+        return submatrix_type(detail::constructor_tag{}, data, r.start(), r.size(), c.start(),
+                              c.size());
     }
 
     [[nodiscard]] constexpr size_type data_size() const noexcept {
@@ -305,6 +315,26 @@ using dmatrix = matrix<dynamic_matrix_engine<T>>;
 
 template<typename T, std::size_t R, std::size_t C>
 using fmatrix = matrix<fixed_matrix_engine<T, R, C>>;
+
+
+template<typename T>
+inline decltype(auto) constexpr
+zeros(std::size_t r, std::size_t c) {
+    return dmatrix<T>(r, c);
+}
+
+template<typename T, std::size_t R, std::size_t C>
+inline decltype(auto) constexpr
+zeros(std::size_t n) {
+    auto &x = fmatrix<T, R, C>();
+    using size_type = typename decltype(x)::size_type;
+    for (size_type i{}; i < x.rows(); i++) {
+        for (size_type j{}; j < x.cols(); j++) {
+            x(i, j) = T{};
+        }
+    }
+    return x;
+}
 
 } // namespace boost::numeric::ublas::experimental
 

@@ -6,7 +6,7 @@
 #define UBLAS_HELPER_HPP
 
 #include <initializer_list>
-#include <exception>
+#include <stdexcept>
 
 namespace boost::numeric::ublas::experimental::detail {
 
@@ -104,7 +104,7 @@ copy_vector_engine(Engine1 &dest, const Engine2 &src) {
     using value_type = typename Engine1::value_type;
     using size_type = typename Engine1::size_type;
 
-    for (size_type i{}; i < dest.rows(); i++) {
+    for (size_type i{}; i < dest.size(); i++) {
         dest[i] = static_cast<value_type>(src[i]);
     }
 }
@@ -116,7 +116,7 @@ copy_vector_engine(Engine1 &dest, const std::initializer_list<T> &src) {
     using value_type = typename Engine1::value_type;
     using size_type = typename Engine1::size_type;
     auto it = src.begin();
-    for (size_type i{}; i < dest.rows(); i++) {
+    for (size_type i{}; i < dest.size(); i++) {
         dest[i] = static_cast<value_type>(*(it++));
     }
 }
