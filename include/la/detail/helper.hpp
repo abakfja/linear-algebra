@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <stdexcept>
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace la::detail {
 
 template<class Engine, class size_type>
 inline constexpr void check_engine_size(Engine const &engine, size_type n_elem) {
@@ -60,10 +60,10 @@ check_init_list(std::initializer_list<std::initializer_list<T>> list, size_type 
 }
 
 
-} // namespace boost::numeric::ublas::experimental::detail
+} // namespace la::detail
 
 
-namespace boost::numeric::ublas::experimental::detail {
+namespace la::detail {
 
 template<class Engine1, class Engine2>
 inline constexpr void

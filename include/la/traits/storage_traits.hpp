@@ -8,9 +8,9 @@
 #include <vector>
 #include <array>
 
-#include <boost/numeric/ublas/matrix/detail/tags.hpp>
+#include <la/detail/tags.hpp>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<class A>
 struct storage_traits;
@@ -64,5 +64,5 @@ struct storage_traits<std::array<T, N>> {
 };
 
 
-} // namespace boost::numeric::ublas::experimental
+} // namespace la
 #endif //UBLAS_STORAGE_TRAITS_HPP

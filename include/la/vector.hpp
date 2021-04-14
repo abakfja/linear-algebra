@@ -9,16 +9,16 @@
 #ifndef BOOST_NUMERIC_UBLAS_VECTOR_H
 #define BOOST_NUMERIC_UBLAS_VECTOR_H
 
-#include <boost/numeric/ublas/matrix/detail/helper.hpp>
-#include <boost/numeric/ublas/matrix/vector_engine.hpp>
-#include <boost/numeric/ublas/matrix/vector_expression.hpp>
-#include <boost/numeric/ublas/matrix/vector_operators.hpp>
-#include <boost/numeric/ublas/matrix/vector_view.hpp>
-#include <boost/numeric/ublas/matrix/traits/layout_traits.hpp>
-#include <boost/numeric/ublas/matrix/slice.hpp>
+#include <la/detail/helper.hpp>
+#include <la/vector_engine.hpp>
+#include <la/vector_expression.hpp>
+#include <la/vector_operators.hpp>
+#include <la/vector_view.hpp>
+#include <la/traits/layout_traits.hpp>
+#include <la/slice.hpp>
 
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename Engine, typename Layout = layout::row_major>
 class vector : public base_vector_expression<vector<Engine, Layout>> {
@@ -269,6 +269,6 @@ zeros(std::size_t n) {
     return x;
 }
 
-} // namespace boost::numeric::ublas::experimental
+} // namespace la
 
 #endif // BOOST_NUMERIC_UBLAS_VECTOR_H

@@ -9,13 +9,13 @@
 #ifndef BOOST_NUMERIC_UBLAS_MATRIX_H
 #define BOOST_NUMERIC_UBLAS_MATRIX_H
 
-#include <boost/numeric/ublas/matrix/matrix_engine.hpp>
-#include <boost/numeric/ublas/matrix/matrix_view.hpp>
-#include <boost/numeric/ublas/matrix/matrix_expression.hpp>
-#include <boost/numeric/ublas/matrix/matrix_operators.hpp>
-#include <boost/numeric/ublas/matrix/slice.hpp>
+#include <la/matrix_engine.hpp>
+#include <la/matrix_view.hpp>
+#include <la/matrix_expression.hpp>
+#include <la/matrix_operators.hpp>
+#include <la/slice.hpp>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename Engine>
 class matrix : public base_matrix_expression<matrix<Engine>> {
@@ -336,6 +336,6 @@ zeros(std::size_t n) {
     return x;
 }
 
-} // namespace boost::numeric::ublas::experimental
+} // namespace la
 
 #endif // BOOST_NUMERIC_UBLAS_MATRIX_H

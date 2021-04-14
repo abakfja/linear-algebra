@@ -5,11 +5,11 @@
 #ifndef UBLAS_MATRIX_EXPRESSION_HPP
 #define UBLAS_MATRIX_EXPRESSION_HPP
 
-#include <boost/numeric/ublas/matrix/traits/expression_traits.hpp>
+#include <la/traits/expression_traits.hpp>
 #include <tuple>
 
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 
 template<typename E>
 struct base_matrix_expression {

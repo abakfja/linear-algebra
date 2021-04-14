@@ -5,10 +5,10 @@
 #ifndef UBLAS_VECTOR_OPERATORS_HPP
 #define UBLAS_VECTOR_OPERATORS_HPP
 
-#include <boost/numeric/ublas/matrix/vector_expression.hpp>
+#include <la/vector_expression.hpp>
 #include <cmath>
 
-namespace boost::numeric::ublas::experimental {
+namespace la {
 template<typename LHS, typename RHS>
 inline decltype(auto) constexpr
 operator+(const base_vector_expression <LHS> &lhs, const base_vector_expression <RHS> &rhs) {
