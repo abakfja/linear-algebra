@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_ENGINE_TRAITS_HPP
-#define UBLAS_ENGINE_TRAITS_HPP
+#ifndef LA_ENGINE_TRAITS_HPP
+#define LA_ENGINE_TRAITS_HPP
 
 namespace la {
 
@@ -66,4 +66,4 @@ using enable_if_dynamic = typename std::enable_if_t<is_dynamic_v<T>, bool>;
 } // namespace la::detail
 
 
-#endif //UBLAS_ENGINE_TRAITS_HPP
+#endif //LA_ENGINE_TRAITS_HPP

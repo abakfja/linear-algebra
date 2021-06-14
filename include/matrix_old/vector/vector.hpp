@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_VECTOR_HPP
-#define UBLAS_VECTOR_HPP
+#ifndef LA_VECTOR_HPP
+#define LA_VECTOR_HPP
 
 
 #include <boost/numeric/ublas/matrix/vector/vector_engine.hpp>
@@ -135,4 +135,4 @@ private:
 }
 
 
-#endif //UBLAS_VECTOR_HPP
+#endif //LA_VECTOR_HPP

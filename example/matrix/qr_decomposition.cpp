@@ -2,10 +2,10 @@
 // Created by abakfja on 3/21/21.
 //
 
-#include <boost/numeric/ublas/matrix/matrix.hpp>
+#include <la/matrix.hpp>
 #include <iostream>
 
-using namespace boost::numeric::ublas::experimental;
+using namespace la;
 
 template<typename T>
 auto qr(dmatrix<T> A) {

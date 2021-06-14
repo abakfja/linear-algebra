@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_MATRIX_HPP
-#define UBLAS_MATRIX_HPP
+#ifndef LA_MATRIX_HPP
+#define LA_MATRIX_HPP
 
 #include <boost/numeric/ublas/matrix/matrix/matrix_engine.hpp>
 #include <boost/numeric/ublas/matrix/matrix/traits/engine_traits.hpp>
@@ -140,4 +140,4 @@ private:
 };
 
 }
-#endif //UBLAS_MATRIX_HPP
+#endif //LA_MATRIX_HPP

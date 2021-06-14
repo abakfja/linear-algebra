@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_ENGINE_TRAITS_HPP
-#define UBLAS_ENGINE_TRAITS_HPP
+#ifndef LA_ENGINE_TRAITS_HPP
+#define LA_ENGINE_TRAITS_HPP
 
 
 namespace boost::numeric::ublas::experimental::detail {
@@ -51,4 +51,4 @@ using enable_if_dynamic = std::enable_if_t<is_dynamic_v<T>>;
 
 } // namespace boost::numeric::ublas::experimental::engine
 
-#endif //UBLAS_ENGINE_TRAITS_HPP
+#endif //LA_ENGINE_TRAITS_HPP

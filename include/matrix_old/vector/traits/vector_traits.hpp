@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef UBLAS_VECTOR_TRAITS_HPP
-#define UBLAS_VECTOR_TRAITS_HPP
+#ifndef LA_VECTOR_TRAITS_HPP
+#define LA_VECTOR_TRAITS_HPP
 
 namespace boost::numeric::ublas::experimental {
 template<typename T>
@@ -66,4 +66,4 @@ using enable_if_row_vector = std::enable_if_t<is_row_vector_v<T>>;
 
 } // namespace boost::numeric::ublas::experimental::traits
 
-#endif //UBLAS_VECTOR_TRAITS_HPP
+#endif //LA_VECTOR_TRAITS_HPP

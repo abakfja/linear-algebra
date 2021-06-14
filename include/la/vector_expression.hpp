@@ -2,8 +2,8 @@
 // Created by abakfja on 4/4/21.
 //
 //
-#ifndef UBLAS_VECTOR_EXPRESSION_HPP
-#define UBLAS_VECTOR_EXPRESSION_HPP
+#ifndef LA_VECTOR_EXPRESSION_HPP
+#define LA_VECTOR_EXPRESSION_HPP
 
 #include <la/traits/expression_traits.hpp>
 #include <tuple>
@@ -86,4 +86,4 @@ struct vector_expression
 
 } // namespace la
 
-#endif //UBLAS_VECTOR_EXPRESSION_HPP
+#endif //LA_VECTOR_EXPRESSION_HPP

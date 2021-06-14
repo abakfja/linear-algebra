@@ -2,8 +2,8 @@
 // Created by abakfja on 4/9/21.
 //
 
-#ifndef UBLAS_MATRIX_VIEW_HPP
-#define UBLAS_MATRIX_VIEW_HPP
+#ifndef LA_MATRIX_VIEW_HPP
+#define LA_MATRIX_VIEW_HPP
 
 #include <la/traits/read_write_traits.hpp>
 
@@ -130,4 +130,4 @@ struct matrix_view_engine {
 };
 
 }
-#endif //UBLAS_MATRIX_VIEW_HPP
+#endif //LA_MATRIX_VIEW_HPP

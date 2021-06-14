@@ -1,10 +1,10 @@
 //
 // Created by abakfja on 3/12/21.
 //
-#include <boost/numeric/ublas/matrix/matrix.hpp>
+#include <la/matrix.hpp>
 #include <iostream>
 
-using namespace boost::numeric::ublas::experimental;
+using namespace la;
 
 
 int main() {

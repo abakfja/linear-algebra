@@ -2,7 +2,7 @@
 // Created by fragrant on 4/14/21.
 //
 
-#include <boost/numeric/ublas/matrix/vector.hpp>
+#include <la/vector.hpp>
 #include <iostream>
 
 using namespace la;

@@ -2,10 +2,11 @@
 // Created by abakfja on 4/13/21.
 //
 
-#ifndef UBLAS_SLICE_HPP
-#define UBLAS_SLICE_HPP
+#ifndef LA_SLICE_HPP
+#define LA_SLICE_HPP
 
 namespace la {
+
 template<typename T = std::size_t>
 struct slice {
 
@@ -46,4 +47,4 @@ struct slice {
 };
 }
 
-#endif //UBLAS_SLICE_HPP
+#endif //LA_SLICE_HPP

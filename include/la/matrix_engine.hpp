@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_NUMERIC_UBLAS_MATRIX_ENGINE_H
-#define BOOST_NUMERIC_UBLAS_MATRIX_ENGINE_H
+#ifndef LA_MATRIX_ENGINE_H
+#define LA_MATRIX_ENGINE_H
 
 #include <cstddef>
 #include <array>
@@ -253,4 +253,4 @@ struct is_dynamic<dynamic_matrix_engine<T>> : std::true_type {
 } // detail
 
 } // namespace la
-#endif // BOOST_NUMERIC_UBLAS_MATRIX_ENGINE_H
+#endif // LA_MATRIX_ENGINE_H

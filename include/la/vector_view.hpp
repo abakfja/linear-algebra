@@ -2,8 +2,8 @@
 // Created by fragrant on 4/9/21.
 //
 
-#ifndef UBLAS_VECTOR_VIEW_HPP
-#define UBLAS_VECTOR_VIEW_HPP
+#ifndef LA_VECTOR_VIEW_HPP
+#define LA_VECTOR_VIEW_HPP
 
 #include <la/traits/read_write_traits.hpp>
 
@@ -116,4 +116,4 @@ struct vector_view_engine {
 };
 
 }
-#endif //UBLAS_VECTOR_VIEW_HPP
+#endif //LA_VECTOR_VIEW_HPP

@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_NUMERIC_UBLAS_VECTOR_H
-#define BOOST_NUMERIC_UBLAS_VECTOR_H
+#ifndef LA_VECTOR_H
+#define LA_VECTOR_H
 
 #include <la/detail/helper.hpp>
 #include <la/vector_engine.hpp>
@@ -52,8 +52,9 @@ public:
             typename layout_type::transpose_type> &;
 
     using slice_type = slice<size_type>;
-    using subvector_type = vector<vector_view_engine<engine_type, detail::read_write_view_tag>>;
-    using const_subvector_type = vector<vector_view_engine<engine_type, detail::read_only_view_tag>>;
+    using subvector_type = vector<vector_view_engine < engine_type, detail::read_write_view_tag>>;
+    using const_subvector_type = vector<
+            vector_view_engine < engine_type, detail::read_only_view_tag>>;
 
     /**
      * default destructor
@@ -87,7 +88,7 @@ public:
      * @param list
      */
     template<typename U>
-    constexpr vector(std::initializer_list<U> list): data(list) {}
+    constexpr vector(std::initializer_list <U> list): data(list) {}
 
     /**
      * c-tor for constructing a dynamic_size_vector of size n
@@ -96,13 +97,13 @@ public:
      * @param n number of elements
      * @param v initial value of the vector elements
      */
-    template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
+    template<class Engine2 = engine_type, typename = detail::enable_if_dynamic <Engine2>>
     explicit constexpr vector(size_type n) : data(n) {
     }
 
     template<typename E>
     constexpr
-    vector(const base_vector_expression<E> &expr): data(expr.size()) {
+    vector(const base_vector_expression <E> &expr): data(expr.size()) {
         detail::check_engine_size(expr, size());
         for (size_type i = 0; i < size(); i++) {
             this->operator[](i) = expr[i];
@@ -116,7 +117,7 @@ public:
     // copy assignment
     template<typename Engine2>
     constexpr vector &operator=(const vector<Engine2, layout_type> &other) {
-        if constexpr (detail::is_dynamic_v<engine_type>) {
+        if constexpr (detail::is_dynamic_v < engine_type >) {
             if (other.size() != size()) {
                 data.resize(other.size());
             }
@@ -128,8 +129,8 @@ public:
     }
 
     template<typename E>
-    constexpr vector &operator=(const base_vector_expression<E> &expr) {
-        if constexpr (detail::is_dynamic_v<engine_type>) {
+    constexpr vector &operator=(const base_vector_expression <E> &expr) {
+        if constexpr (detail::is_dynamic_v < engine_type >) {
             if (expr.size() != size()) {
                 data.resize(expr.size());
             }
@@ -157,7 +158,7 @@ public:
 
 
     template<typename E>
-    constexpr bool operator==(const base_vector_expression<E> &other) const {
+    constexpr bool operator==(const base_vector_expression <E> &other) const {
         if (size() != other.size()) {
             return false;
         }
@@ -205,7 +206,7 @@ public:
         return data.empty();
     }
 
-    template<class Engine2 = engine_type, typename = detail::enable_if_dynamic<Engine2>>
+    template<class Engine2 = engine_type, typename = detail::enable_if_dynamic <Engine2>>
     void resize(size_type n) {
         data.resize(n);
     }
@@ -244,16 +245,16 @@ private:
 };
 
 template<typename T>
-using dvector = vector<dynamic_vector_engine<T>>;
+using dvector = vector<dynamic_vector_engine < T>>;
 
 template<typename T, std::size_t N>
-using fvector = vector<fixed_vector_engine<T, N>>;
+using fvector = vector<fixed_vector_engine < T, N>>;
 
 template<typename T>
-using d_col_vector = vector<dynamic_vector_engine<T>, layout::column_major>;
+using d_col_vector = vector<dynamic_vector_engine < T>, layout::column_major>;
 
 template<typename T, std::size_t N>
-using f_col_vector = vector<fixed_vector_engine<T, N>, layout::column_major>;
+using f_col_vector = vector<fixed_vector_engine < T, N>, layout::column_major>;
 
 template<typename T>
 inline decltype(auto) constexpr
@@ -271,4 +272,4 @@ zeros(std::size_t n) {
 
 } // namespace la
 
-#endif // BOOST_NUMERIC_UBLAS_VECTOR_H
+#endif // LA_VECTOR_H

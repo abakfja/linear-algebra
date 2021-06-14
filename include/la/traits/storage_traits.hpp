@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_STORAGE_TRAITS_HPP
-#define UBLAS_STORAGE_TRAITS_HPP
+#ifndef LA_STORAGE_TRAITS_HPP
+#define LA_STORAGE_TRAITS_HPP
 
 #include <vector>
 #include <array>
@@ -65,4 +65,4 @@ struct storage_traits<std::array<T, N>> {
 
 
 } // namespace la
-#endif //UBLAS_STORAGE_TRAITS_HPP
+#endif //LA_STORAGE_TRAITS_HPP

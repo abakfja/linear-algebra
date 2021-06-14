@@ -2,8 +2,8 @@
 // Created by abakfja on 3/29/21.
 //
 
-#ifndef UBLAS_MATRIX_ENGINE_TRAITS_HPP
-#define UBLAS_MATRIX_ENGINE_TRAITS_HPP
+#ifndef LA_MATRIX_ENGINE_TRAITS_HPP
+#define LA_MATRIX_ENGINE_TRAITS_HPP
 
 #include <boost/numeric/ublas/matrix/engine_traits.hpp>
 
@@ -28,4 +28,4 @@ struct is_dynamic<dynamic_matrix_engine<T>> : std::true_type {
 
 }
 
-#endif //UBLAS_MATRIX_ENGINE_TRAITS_HPP
+#endif //LA_MATRIX_ENGINE_TRAITS_HPP

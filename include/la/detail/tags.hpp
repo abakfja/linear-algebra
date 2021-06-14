@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_NUMERIC_UBLAS_MATRIX_TAGS_H
-#define BOOST_NUMERIC_UBLAS_MATRIX_TAGS_H
+#ifndef LA_MATRIX_TAGS_H
+#define LA_MATRIX_TAGS_H
 
 namespace la::detail {
 
@@ -28,4 +28,4 @@ struct constructor_tag{};
 } // namespace la
 
 
-#endif // BOOST_NUMERIC_UBLAS_MATRIX_TAGS_H
+#endif // LA_MATRIX_TAGS_H
