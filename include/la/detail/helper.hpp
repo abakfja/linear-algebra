@@ -2,8 +2,8 @@
 // Created by fragrant on 4/9/21.
 //
 
-#ifndef UBLAS_HELPER_HPP
-#define UBLAS_HELPER_HPP
+#ifndef LA_HELPER_HPP
+#define LA_HELPER_HPP
 
 #include <initializer_list>
 #include <stdexcept>
@@ -122,4 +122,4 @@ copy_vector_engine(Engine1 &dest, const std::initializer_list<T> &src) {
 }
 
 }
-#endif //UBLAS_HELPER_HPP
+#endif //LA_HELPER_HPP

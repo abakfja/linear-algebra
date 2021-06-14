@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef UBLAS_DYNAMIC_MATRIX_HPP
-#define UBLAS_DYNAMIC_MATRIX_HPP
+#ifndef LA_DYNAMIC_MATRIX_HPP
+#define LA_DYNAMIC_MATRIX_HPP
 
 #include <memory>
 #include <tuple>

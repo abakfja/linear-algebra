@@ -2,8 +2,8 @@
 // Created by abakfja on 4/4/21.
 //
 
-#ifndef UBLAS_LAYOUT_TRAITS_HPP
-#define UBLAS_LAYOUT_TRAITS_HPP
+#ifndef LA_LAYOUT_TRAITS_HPP
+#define LA_LAYOUT_TRAITS_HPP
 
 namespace la::layout {
 
@@ -20,4 +20,4 @@ struct row_major {
 
 };
 
-#endif //UBLAS_LAYOUT_TRAITS_HPP
+#endif //LA_LAYOUT_TRAITS_HPP

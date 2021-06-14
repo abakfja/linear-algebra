@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef UBLAS_MATRIX_TRAIT_H
-#define UBLAS_MATRIX_TRAIT_H
+#ifndef LA_MATRIX_TRAIT_H
+#define LA_MATRIX_TRAIT_H
 
 #include <boost/numeric/ublas/matrix/engine_traits.hpp>
 
@@ -58,4 +58,4 @@ struct matrix_traits<matrix<E>> {
 };
 }
 
-#endif //UBLAS_MATRIX_TRAIT_H
+#endif //LA_MATRIX_TRAIT_H

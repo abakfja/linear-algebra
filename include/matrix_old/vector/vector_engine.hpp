@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_VECTOR_ENGINE_HPP
-#define UBLAS_VECTOR_ENGINE_HPP
+#ifndef LA_VECTOR_ENGINE_HPP
+#define LA_VECTOR_ENGINE_HPP
 
 
 #include <boost/numeric/ublas/matrix/storage_traits.hpp>
@@ -37,4 +37,4 @@ struct dynamic_vector_engine {
 
 }
 
-#endif //UBLAS_VECTOR_ENGINE_HPP
+#endif //LA_VECTOR_ENGINE_HPP

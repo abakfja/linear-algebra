@@ -2,7 +2,7 @@
 // Created by vect on 4/13/21.
 //
 
-#include <boost/numeric/ublas/matrix/vector.hpp>
+#include <la/vector.hpp>
 
 #include <iostream>
 

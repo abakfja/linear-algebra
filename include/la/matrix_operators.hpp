@@ -2,8 +2,8 @@
 // Created by abakfja on 4/13/21.
 //
 
-#ifndef UBLAS_MATRIX_OPERATORS_HPP
-#define UBLAS_MATRIX_OPERATORS_HPP
+#ifndef LA_MATRIX_OPERATORS_HPP
+#define LA_MATRIX_OPERATORS_HPP
 
 #include <la/matrix_expression.hpp>
 #include <cmath>
@@ -109,4 +109,4 @@ norm(const base_matrix_expression <T> &mat) {
 }
 
 }
-#endif //UBLAS_MATRIX_OPERATORS_HPP
+#endif //LA_MATRIX_OPERATORS_HPP

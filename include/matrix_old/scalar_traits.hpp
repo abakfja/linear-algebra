@@ -2,8 +2,8 @@
 // Created by abakfja on 4/2/21.
 //
 
-#ifndef UBLAS_SCALAR_TRAITS_HPP
-#define UBLAS_SCALAR_TRAITS_HPP
+#ifndef LA_SCALAR_TRAITS_HPP
+#define LA_SCALAR_TRAITS_HPP
 
 template<typename T>
 struct scalar_value_traits : detail::compare_traits<std::decay_t < T>> {
@@ -20,4 +20,4 @@ struct scalar_value_traits : detail::compare_traits<std::decay_t < T>> {
     using magnitude_type = typename magnitude_traits::magnitude_type;
 };
 
-#endif //UBLAS_SCALAR_TRAITS_HPP
+#endif //LA_SCALAR_TRAITS_HPP

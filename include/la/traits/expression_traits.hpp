@@ -2,8 +2,8 @@
 // Created by abakfja on 4/4/21.
 //
 
-#ifndef UBLAS_EXPRESSION_TRAITS_HPP
-#define UBLAS_EXPRESSION_TRAITS_HPP
+#ifndef LA_EXPRESSION_TRAITS_HPP
+#define LA_EXPRESSION_TRAITS_HPP
 
 #include <type_traits>
 
@@ -118,4 +118,4 @@ inline constexpr bool is_matrix_expr_v = is_matrix_expr<T>::value;
 
 }  // namespace la::detail
 
-#endif  //UBLAS_EXPRESSION_TRAITS_HPP
+#endif  //LA_EXPRESSION_TRAITS_HPP

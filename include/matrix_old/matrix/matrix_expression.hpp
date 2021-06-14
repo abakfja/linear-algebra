@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef UBLAS_MATRIX_EXPRESSION_HPP
-#define UBLAS_MATRIX_EXPRESSION_HPP
+#ifndef LA_MATRIX_EXPRESSION_HPP
+#define LA_MATRIX_EXPRESSION_HPP
 
 #include <boost/numeric/ublas/matrix/matrix/traits/matrix_traits.hpp>
 #include <type_traits>
@@ -40,4 +40,4 @@ auto operator*(const L &l, const R &r) {
 }
 
 }
-#endif //UBLAS_MATRIX_EXPRESSION_HPP
+#endif //LA_MATRIX_EXPRESSION_HPP

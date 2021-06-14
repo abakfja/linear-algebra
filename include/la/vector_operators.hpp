@@ -2,8 +2,8 @@
 // Created by abakfja on 4/14/21.
 //
 
-#ifndef UBLAS_VECTOR_OPERATORS_HPP
-#define UBLAS_VECTOR_OPERATORS_HPP
+#ifndef LA_VECTOR_OPERATORS_HPP
+#define LA_VECTOR_OPERATORS_HPP
 
 #include <la/vector_expression.hpp>
 #include <cmath>
@@ -95,13 +95,13 @@ inner_product(const base_vector_expression<LHS> &lhs, const base_vector_expressi
 
 template<typename ret, typename T, std::enable_if_t<std::is_floating_point_v<ret>, bool> = true>
 inline ret constexpr
-norm(const base_vector_expression <T> &vect) {
+norm(const base_vector_expression <T> &vect) noexcept {
     ret res{};
     for (std::size_t i{}; i < vect.size(); i++) {
-            res += vect[i];
+            res += vect[i] * vect[i];
     }
     return std::sqrt(res);
 }
 
 }
-#endif //UBLAS_VECTOR_OPERATORS_HPP
+#endif //LA_VECTOR_OPERATORS_HPP

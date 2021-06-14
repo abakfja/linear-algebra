@@ -2,8 +2,8 @@
 // Created by abakfja on 3/28/21.
 //
 
-#ifndef UBLAS_MATRIX_ENGINE_HPP
-#define UBLAS_MATRIX_ENGINE_HPP
+#ifndef LA_MATRIX_ENGINE_HPP
+#define LA_MATRIX_ENGINE_HPP
 
 #include <boost/numeric/ublas/matrix/storage_traits.hpp>
 #include <cstddef>
@@ -31,4 +31,4 @@ struct dynamic_matrix_engine {
 
 }
 
-#endif //UBLAS_MATRIX_ENGINE_HPP
+#endif //LA_MATRIX_ENGINE_HPP

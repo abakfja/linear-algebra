@@ -1,13 +1,9 @@
 //
-//  Copyright (c) 2021 Kannav Mehta
-//
-//  Distributed under the Boost Software License, Version 1.0. (See
-//  accompanying file LICENSE_1_0.txt or copy at
-//  http://www.boost.org/LICENSE_1_0.txt)
+// Created by abakfja on 4/9/21.
 //
 
-#ifndef BOOST_NUMERIC_UBLAS_MATRIX_H
-#define BOOST_NUMERIC_UBLAS_MATRIX_H
+#ifndef LA_MATRIX_H
+#define LA_MATRIX_H
 
 #include <la/matrix_engine.hpp>
 #include <la/matrix_view.hpp>
@@ -338,4 +334,4 @@ zeros(std::size_t n) {
 
 } // namespace la
 
-#endif // BOOST_NUMERIC_UBLAS_MATRIX_H
+#endif // LA_MATRIX_H

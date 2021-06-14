@@ -6,8 +6,8 @@
 //  http://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifndef BOOST_NUMERIC_UBLAS_VECTOR_ENGINE_H
-#define BOOST_NUMERIC_UBLAS_VECTOR_ENGINE_H
+#ifndef L_VECTOR_ENGINE_H
+#define LA_VECTOR_ENGINE_H
 
 #include <cstddef>
 #include <array>
@@ -241,4 +241,4 @@ struct is_dynamic<dynamic_vector_engine<T>> : std::true_type {
 
 } // namespace la
 
-#endif // BOOST_NUMERIC_UBLAS_VECTOR_ENGINE_H
+#endif // LA_VECTOR_ENGINE_H

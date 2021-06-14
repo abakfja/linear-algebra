@@ -2,8 +2,8 @@
 // Created by fragrant on 4/9/21.
 //
 
-#ifndef UBLAS_READ_WRITE_TRAITS_H
-#define UBLAS_READ_WRITE_TRAITS_H
+#ifndef LA_READ_WRITE_TRAITS_H
+#define LA_READ_WRITE_TRAITS_H
 
 #include <la/detail/tags.hpp>
 
@@ -30,4 +30,4 @@ struct read_write_traits<Engine, detail::read_write_view_tag> {
 
 }
 
-#endif //UBLAS_READ_WRITE_TRAITS_H
+#endif //LA_READ_WRITE_TRAITS_H

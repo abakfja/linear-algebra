@@ -8,5 +8,5 @@ foreach(file ${files})
             BEFORE
             INTERFACE
             ${CMAKE_CURRENT_SOURCE_DIR}/include)
-    target_link_libraries(${source} PRIVATE gil_include_directories)
+    target_link_libraries(${source} PRIVATE la_include_directories)
 endforeach()
